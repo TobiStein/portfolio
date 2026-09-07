@@ -350,14 +350,15 @@ function main() {
     process.exitCode = 2
     return
   }
-  const revision = git(source, ['rev-parse', 'HEAD']).trim()
+  const sourceDirty = !!git(source, ['status', '--porcelain']).trim()
+  const revision = `${git(source, ['rev-parse', 'HEAD']).trim()}${sourceDirty ? '+dirty' : ''}`
   const nextState =
     JSON.stringify(
       {
         schema: 1,
         theme: 'astro-theme-ink',
         sourceRevision: revision,
-        sourceDirty: !!git(source, ['status', '--porcelain']).trim(),
+        sourceDirty,
         snapshotHash: hash(JSON.stringify(latest)),
         files: latest
       },

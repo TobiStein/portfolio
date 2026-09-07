@@ -24,6 +24,7 @@ const enabled = config.comment.provider === 'waline' && server !== ''
 
 <script>
   import { config } from '@/site-config'
+  import { withBase } from '@/utils'
 
   const server = config.comment.server
   const target = document.getElementById('waline')
@@ -40,7 +41,7 @@ const enabled = config.comment.provider === 'waline' && server !== ''
       pageview: false,
       imageUploader: false,
       // Single heart "like" reaction — styling lives in waline.css
-      reaction: ['/icons/heart-item.svg'],
+      reaction: [withBase('/icons/heart-item.svg')],
       locale: {
         reaction0: 'Like(s)',
         reactionTitle: '这篇文章对你有帮助吗？',

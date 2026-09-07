@@ -9,6 +9,7 @@ import Footer from '@/components/Footer.astro'
 import Header from '@/components/Header.astro'
 import Lightbox from '@/components/Lightbox.astro'
 import { config } from '@/site-config'
+import themeScript from '@/scripts/theme.js?raw'
 import { withBase } from '@/utils'
 import { THEME_COLORS, themeColorHex } from '@/utils/theme'
 
@@ -86,43 +87,8 @@ const ogUrl = new URL(withBase(ogImage), Astro.site ?? 'https://example.com')
       )
     }
 
-    <!-- Theme + palette, applied before first paint to avoid flash -->
-    <script is:inline>
-      ;(() => {
-        const THEME_KEY = 'ink-theme'
-        const PALETTE_KEY = 'ink-palette'
-        const root = document.documentElement
-        // Storage may throw in private mode / when disabled — fall back to defaults
-        let stored = null
-        let storedPalette = null
-        try {
-          stored = localStorage.getItem(THEME_KEY)
-          storedPalette = localStorage.getItem(PALETTE_KEY)
-        } catch {
-          /* storage unavailable — use config defaults */
-        }
-        const theme =
-          stored === 'light' || stored === 'dark' ? stored : (root.dataset.defaultTheme ?? 'system')
-        const dark =
-          theme === 'dark' ||
-          (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
-        const palette = storedPalette === 'fresh' ? 'fresh' : (root.dataset.defaultPalette ?? 'ink')
-        root.classList.toggle('dark', dark)
-        root.classList.toggle('fresh', palette === 'fresh')
-        root.dataset.theme = theme
-        root.dataset.palette = palette
-
-        // Paint the html background before first paint (kills any canvas flash)
-        // and keep theme-color in sync. Hex values ride on data attributes so
-        // this works before the stylesheets load.
-        const bg = root.dataset[`bg-${palette}-${dark ? 'dark' : 'light'}`]
-        if (bg) {
-          root.style.backgroundColor = bg
-          const meta = document.querySelector('meta[name="theme-color"]')
-          if (meta) meta.setAttribute('content', bg)
-        }
-      })()
-    </script>
+    <!-- Theme + palette controller: first paint, toggle clicks and OS changes -->
+    <script is:inline set:html={themeScript} />
   </head>
 
   <body

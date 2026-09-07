@@ -36,8 +36,8 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          SITE_URL: https://willimt.github.io
-          BASE_PATH: /astro-theme-ink/
+          SITE_URL: https://${{ github.repository_owner }}.github.io
+          BASE_PATH: /${{ github.event.repository.name }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

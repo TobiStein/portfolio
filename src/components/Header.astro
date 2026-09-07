@@ -89,7 +89,7 @@ function isActive(link: string): boolean {
   {
     config.header.menu.map((item) => (
       <a
-        href={item.link}
+        href={withBase(item.link)}
         aria-current={isActive(item.link) ? 'page' : undefined}
         class={[
           'flex-none rounded-md px-3 py-1 text-sm transition-colors duration-200',

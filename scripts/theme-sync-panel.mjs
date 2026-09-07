@@ -293,18 +293,29 @@ function runSync(opts) {
 }
 
 function openBrowser(url) {
-  if (process.platform === 'win32') {
-    const child = spawn('cmd', ['/c', 'start', '', url], {
-      detached: true,
-      stdio: 'ignore',
-      windowsHide: true
-    })
-    child.unref()
-  }
+  const command =
+    process.platform === 'win32'
+      ? ['cmd', ['/c', 'start', '', url]]
+      : process.platform === 'darwin'
+        ? ['open', [url]]
+        : ['xdg-open', [url]]
+  const child = spawn(command[0], command[1], {
+    detached: true,
+    stdio: 'ignore',
+    ...(process.platform === 'win32' ? { windowsHide: true } : {})
+  })
+  child.unref()
 }
 
 const defaults = panelOptions(process.argv.slice(2))
 const server = http.createServer(async (request, reply) => {
+  // Reject DNS-rebinding requests: only the loopback host may use the panel.
+  const hostHeader = request.headers.host || ''
+  if (!/^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/.test(hostHeader)) {
+    reply.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' })
+    reply.end('Forbidden')
+    return
+  }
   if (request.method === 'GET' && request.url === '/') {
     reply.writeHead(200, {
       'content-type': 'text/html; charset=utf-8',

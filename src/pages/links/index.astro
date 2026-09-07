@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { config } from '@/site-config'
+import { withBase } from '@/utils'
 ---
 
 <BaseLayout title="Friends" description={`${config.friends.length} friends`}>
@@ -21,7 +22,7 @@ import { config } from '@/site-config'
           >
             {friend.avatar && (
               <img
-                src={friend.avatar}
+                src={withBase(friend.avatar)}
                 alt=""
                 loading="lazy"
                 class="size-12 shrink-0 rounded-full border border-line bg-wash object-cover"
