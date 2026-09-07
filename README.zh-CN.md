@@ -57,6 +57,7 @@ pnpm dev
 | `pnpm dev`             | 启动本地开发服务器                                            |
 | `pnpm check`           | 运行 Astro 与 TypeScript 诊断                                 |
 | `pnpm build`           | 先诊断，再生成 `dist` 静态站点                                |
+| `pnpm test`            | 运行 Node 回归测试                                             |
 | `pnpm preview`         | 本地预览构建产物                                              |
 | `pnpm sync`            | 刷新 Astro 生成的类型和内容元数据                             |
 | `pnpm format`          | 用 Prettier 格式化仓库；该命令会写入文件                      |
@@ -178,7 +179,7 @@ src/
 
 `pnpm build` 会生成 `dist` 静态目录，可部署到 GitHub Pages、Vercel、Netlify、Cloudflare Pages，或任意静态托管服务。
 
-第一次生产构建前，请把 [astro.config.ts](./astro.config.ts) 中示例站点地址替换成真实域名。sitemap、canonical、Open Graph URL 与 RSS 都以它为准。
+站点地址和子路径由 `SITE_URL`、`BASE_PATH` 两个环境变量决定（见 [astro.config.ts](./astro.config.ts)）。仓库自带的 GitHub Pages 工作流会自动设置这两项。其他平台请把 `SITE_URL` 设为生产域名——sitemap、canonical、Open Graph 和 RSS 都以它为准；仅当站点部署在 `/blog/` 这类子路径下时才设置 `BASE_PATH`。
 
 ## 致谢与许可
 

@@ -57,6 +57,7 @@ For the day-to-day blogging and release workflow, see the [detailed blog guide](
 | `pnpm dev`             | Start the local development server                                    |
 | `pnpm check`           | Run Astro and TypeScript diagnostics                                  |
 | `pnpm build`           | Run diagnostics, then create the static site in `dist`                |
+| `pnpm test`            | Run the Node regression suite                                         |
 | `pnpm preview`         | Preview the built site locally                                        |
 | `pnpm sync`            | Refresh Astro-generated types and content metadata                    |
 | `pnpm format`          | Format the repository with Prettier; this command writes files        |
@@ -178,7 +179,7 @@ src/
 
 `pnpm build` produces a static `dist` directory. It can be deployed to GitHub Pages, Vercel, Netlify, Cloudflare Pages, or any host that serves static files.
 
-Before the first production build, replace the example site URL in [astro.config.ts](./astro.config.ts). The value is used for the sitemap, canonical URLs, Open Graph URLs and RSS.
+The site URL and base path are read from the `SITE_URL` and `BASE_PATH` environment variables (see [astro.config.ts](./astro.config.ts)). The bundled GitHub Pages workflow sets both automatically. On other hosts, set `SITE_URL` to your production origin — it feeds the sitemap, canonical URLs, Open Graph URLs and RSS — and set `BASE_PATH` only when the site lives under a sub-path such as `/blog/`.
 
 ## Credits and license
 
