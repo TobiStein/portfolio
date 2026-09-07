@@ -1,7 +1,7 @@
 {
   "name": "astro-theme-ink",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "packageManager": "pnpm@10.20.0",
   "description": "A warm, paper-feel personal blog theme built with Astro & UnoCSS. Ink on paper.",
   "keywords": [
@@ -25,6 +25,9 @@
     "preview": "astro preview",
     "sync": "astro sync",
     "check": "astro check",
+    "test": "node --test tests/*.test.mjs",
+    "theme:sync": "node scripts/theme-sync.mjs",
+    "theme:sync:ui": "node scripts/theme-sync-panel.mjs",
     "format": "prettier --write .",
     "clean": "node -e \"['dist','.astro'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\"",
     "optimize:avatar": "node scripts/optimize-avatar.mjs"

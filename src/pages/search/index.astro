@@ -16,6 +16,9 @@ import { config } from '@/site-config'
       config.search.enabled ? (
         <>
           <div class="relative">
+            <label for="search-input" class="sr-only">
+              Search posts
+            </label>
             <span
               class="i-lucide-search absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft"
               aria-hidden="true"
@@ -25,12 +28,19 @@ import { config } from '@/site-config'
               type="search"
               placeholder="Search posts, e.g. astro, theme…"
               autocomplete="off"
+              aria-controls="search-results"
               autofocus
               class="w-full rounded-xl border border-line bg-card px-10 py-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-ink-soft/60 focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
           </div>
-          <p id="search-status" class="mt-3 text-sm text-ink-soft" />
-          <ul id="search-results" class="mt-6 flex flex-col gap-3" />
+          <p
+            id="search-status"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            class="mt-3 text-sm text-ink-soft"
+          />
+          <ul id="search-results" class="mt-6 flex flex-col" />
         </>
       ) : (
         <p class="py-10 text-center text-ink-soft">Search is disabled in the configuration.</p>
@@ -42,19 +52,13 @@ import { config } from '@/site-config'
 <script>
   const BASE = import.meta.env.BASE_URL
 
-  interface SearchItem {
-    slug: string
-    title: string
-    description: string
-    tags: string[]
-    date: string
-    content: string
-  }
+  import { searchPosts, type SearchItem } from '@/utils/search'
 
   const input = document.getElementById('search-input') as HTMLInputElement | null
   const status = document.getElementById('search-status') as HTMLElement | null
   const list = document.getElementById('search-results') as HTMLElement | null
   let index: SearchItem[] | null = null
+  let loadFailed = false
 
   if (input && status && list) {
     const escapeHtml = (s: string) =>
@@ -92,32 +96,26 @@ import { config } from '@/site-config'
       }
       if (!index) {
         list!.innerHTML = ''
-        status!.textContent = 'Loading index…'
+        status!.textContent = loadFailed
+          ? 'Failed to load search index. Please reload to try again.'
+          : 'Loading index…'
         return
       }
-      const hits = index.filter(
-        (item) =>
-          item.title.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query) ||
-          item.tags.some((t) => t.toLowerCase().includes(query)) ||
-          item.content.toLowerCase().includes(query)
-      )
+      const hits = searchPosts(index, query)
       status!.textContent = `${hits.length} results found`
       list!.innerHTML = hits.length
         ? hits
             .map(
               (item) => `
-            <li>
-              <a href="${BASE}blog/${item.slug}" class="paper-card group block p-4">
-                <div class="flex items-center justify-between gap-3">
-                  <h2 class="truncate font-serif font-semibold transition-colors group-hover:text-accent">${highlight(item.title, query)}</h2>
-                  <time class="shrink-0 font-mono text-xs text-ink-soft">${new Date(item.date).toLocaleDateString()}</time>
-                </div>
-                <p class="mt-1 line-clamp-2 text-sm leading-relaxed text-ink-soft">${snippet(item, query)}</p>
+            <li class="post-row">
+              <a href="${BASE}blog/${escapeHtml(item.slug.split('/').map(encodeURIComponent).join('/'))}" class="group block">
+                <h2 class="font-serif text-xl font-semibold leading-snug transition-colors group-hover:text-accent">${highlight(item.title, query)}</h2>
+                <time class="mt-2 block text-xs text-ink-soft tabular-nums">${new Date(item.date).toLocaleDateString()}</time>
+                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">${snippet(item, query)}</p>
                 ${
                   item.tags.length
-                    ? `<div class="mt-2 flex flex-wrap gap-1.5">${item.tags
-                        .map((t) => `<span class="chip">#${escapeHtml(t)}</span>`)
+                    ? `<div class="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-soft">${item.tags
+                        .map((t) => `<span>#${escapeHtml(t)}</span>`)
                         .join('')}</div>`
                     : ''
                 }
@@ -134,14 +132,19 @@ import { config } from '@/site-config'
       timer = window.setTimeout(() => render(input.value), 120)
     })
 
+    status.textContent = 'Loading index…'
     fetch(`${BASE}search-index.json`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Search index request failed: ${r.status}`)
+        return r.json()
+      })
       .then((data: SearchItem[]) => {
         index = data
         render(input.value)
       })
       .catch(() => {
-        status!.textContent = 'Failed to load search index'
+        loadFailed = true
+        status!.textContent = 'Failed to load search index. Please reload to try again.'
       })
   }
 </script>

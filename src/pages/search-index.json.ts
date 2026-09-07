@@ -17,7 +17,7 @@ export const GET: APIRoute = async () => {
     description: post.data.description,
     tags: post.data.tags,
     date: post.data.publishDate.toISOString(),
-    content: stripMarkdown(getPostRawMarkdown(post.id)).slice(0, 4000)
+    content: stripMarkdown(getPostRawMarkdown(post.id))
   }))
 
   return new Response(JSON.stringify(index), {

@@ -2,145 +2,184 @@
 
 [English](./README.md) · [简体中文](./README.zh-CN.md)
 
-A warm, paper-feel personal blog theme built with [Astro](https://astro.build) & [UnoCSS](https://unocss.dev). Ink on paper — one accent hue, quiet grays, generous whitespace, serif headings.
+A warm, paper-feel personal blog theme built with [Astro](https://astro.build) and [UnoCSS](https://unocss.dev). It keeps the palette quiet, gives headings a serif voice, and leaves enough room for long-form writing to breathe.
+
+The site is fully static. Build it once, then serve the generated files from any static host.
 
 ## Screenshots
 
 <p>
-  <img src="public/images/home-ink.png" alt="Home page - ink palette" width="49%" />
-  <img src="public/images/home-fresh.png" alt="Home page - fresh palette" width="49%" />
+  <img src="public/images/home-ink.png" alt="Home page in the ink palette" width="49%" />
+  <img src="public/images/home-fresh.png" alt="Home page in the fresh palette" width="49%" />
 </p>
 
 <p>
-  <img src="public/images/blog-content-ink.png" alt="Article page - ink palette" width="49%" />
-  <img src="public/images/blog-content-fresh.png" alt="Article page - fresh palette" width="49%" />
+  <img src="public/images/blog-content-ink.png" alt="Article page in the ink palette" width="49%" />
+  <img src="public/images/blog-content-fresh.png" alt="Article page in the fresh palette" width="49%" />
 </p>
 
 <p>
-  <img src="public/images/blog-index.png" alt="Blog list page" width="32%" />
+  <img src="public/images/blog-index.png" alt="Blog index page" width="32%" />
   <img src="public/images/about.png" alt="About page" width="32%" />
-  <img src="public/images/links.png" alt="Links page" width="32%" />
+  <img src="public/images/links.png" alt="Friend links page" width="32%" />
 </p>
 
-## Features
+## What is included
 
-- 📝 Blog list with pagination, tags, yearly archives, RSS & sitemap
-- 🔍 Built-in lightweight full-text search — a prerendered JSON index, zero external services
-- 💬 Waline comments + 📊 article page views (share one Waline server, opt-in via `src/site.config.ts`)
-- 🧮 Site-wide total-visits counter in the footer — shares the same Waline server, no extra dependency
-- 🌗 Light / dark / system themes, applied before first paint (no flash) with a smooth cross-fade
-- 🎨 Two built-in palettes — warm **ink** and fresh **haze blue** — switchable from the header (persisted); soft aurora gradients & palette-aware accents
-- 📖 Sticky table of contents on desktop, collapsible TOC on mobile
-- 🖼️ Optional cover images per post (`heroImage`)
-- 🖼️ Click-to-zoom lightbox for article images
-- 📊 Reading progress bar + prev/next post navigation on article pages
-- 🔝 Floating back-to-top button
-- 🔍 SEO: JSON-LD `BlogPosting` structured data, Open Graph / Twitter cards, canonical URLs
-- ✍️ Serif-display typography over UnoCSS `presetTypography`
-- 📐 KaTeX math rendering — `$...$` / `$$...$$` in Markdown (remark-math + rehype-katex)
-- 📦 Code blocks with language badges, copy buttons, and proper dark-mode token colors
-- 🧩 UnoCSS `presetWind3` + `presetIcons` (lucide), pure static output
+- Blog pages with pagination, tags, yearly archives, RSS and sitemap
+- A small, build-time search index searched in the browser; no third-party search service
+- Light, dark and system themes, applied before first paint; warm ink and cool fresh palettes can be switched independently
+- A configuration-driven home page with recent posts, education, skills, tag cloud and friend-link sections
+- Sticky desktop table of contents, mobile table of contents, reading progress, reading-time estimates, and previous/next links
+- Responsive local cover images, lazy-loaded article images, and click-to-zoom image viewing
+- Markdown extras: KaTeX math, Mermaid diagrams, Shiki highlighting, line highlights/diffs, code titles, copy buttons and automatic folding after 15 lines
+- Optional Waline comments, per-post page views and a footer-wide visit counter
+- Canonical URLs, Open Graph and Twitter metadata, JSON-LD BlogPosting data, RSS full text and sitemap generation
 
-## Quick start
+## Requirements
+
+- A Node.js release supported by Astro 5 (a current LTS release is recommended)
+- pnpm; this repository is pinned to pnpm 10.20.0
+
+## Run it locally
 
 ```bash
 pnpm install
-pnpm dev          # http://localhost:4321
+pnpm dev
 ```
 
-Build & preview:
+The development server listens on <http://localhost:4321> by default.
 
-```bash
-pnpm build
-pnpm preview
+For the day-to-day blogging and release workflow, see the [detailed blog guide](./docs/blog-guide.md). It explains the separation between a theme and a real blog, configuration, post URLs, captions, code and math, drafts, release checks and theme synchronization.
+
+| Command                | Purpose                                                               |
+| ---------------------- | --------------------------------------------------------------------- |
+| `pnpm dev`             | Start the local development server                                    |
+| `pnpm check`           | Run Astro and TypeScript diagnostics                                  |
+| `pnpm build`           | Run diagnostics, then create the static site in `dist`                |
+| `pnpm preview`         | Preview the built site locally                                        |
+| `pnpm sync`            | Refresh Astro-generated types and content metadata                    |
+| `pnpm format`          | Format the repository with Prettier; this command writes files        |
+| `pnpm optimize:avatar` | Create `public/avatar.webp` from `public/avatar.png` (256 × 256 WebP) |
+
+## Sync the theme into a blog
+
+When the theme and the real blog live in separate repositories, always preview first and then apply the approved changes:
+
+```powershell
+cd D:/Code/astro-theme-ink
+pnpm theme:sync --target ../Blog
+pnpm theme:sync --target ../Blog --apply
 ```
 
-## Writing posts
+The first command does not modify the blog. If you are already in the blog directory, explicitly name the theme source instead:
 
-Add a Markdown file under `src/content/blog/`:
+```powershell
+pnpm theme:sync --source ../astro-theme-ink --target .
+pnpm theme:sync --source ../astro-theme-ink --target . --apply
+```
+
+Run `pnpm test` and `pnpm build` in the blog after applying. Commit `.theme-sync.json` with the update. The script preserves posts, personal assets, domains and deployment settings; resolve `REVIEW` or `CONFLICT` results with the [sync guide](./docs/theme-sync.md).
+
+For a local visual panel instead of the command line, run:
+
+```powershell
+pnpm theme:sync:ui
+```
+
+It opens `http://127.0.0.1:4175`, where you can set both directories, preview changes and explicitly apply them. The server listens only on the local machine. Use `--port 4300` to change the port or `--no-open` to print the address without opening a browser.
+
+## Configure the site
+
+Core site settings live in [src/site-config.ts](./src/site-config.ts). The file is typed, and most day-to-day changes belong there rather than in a component.
+
+| Section          | Controls                                                                                       |
+| ---------------- | ---------------------------------------------------------------------------------------------- |
+| `site`           | Title, author, description, language, favicon, avatar, social image, default palette and theme |
+| `header.menu`    | Header navigation                                                                              |
+| `home`           | Hero content, recent-post count, education, skills, and optional tag/friend sections           |
+| `footer`         | Copyright text, footer links and social links                                                  |
+| `blog.pageSize`  | Number of posts per blog page                                                                  |
+| `search.enabled` | Whether the search entry point and search UI are shown                                         |
+| `pageview`       | Waline endpoint for article views and the optional site-wide counter                           |
+| `comment`        | Waline endpoint for comments                                                                   |
+| `friends`        | Items displayed on the `/links` page and, when enabled, on the home page                       |
+
+Comments and counters are deliberately separate settings. Point both at the same Waline server if you want both features; leave either endpoint empty to disable that feature. Comments are loaded only when their section approaches the viewport.
+
+The pages under [src/pages](./src/pages) and the prose on the About page remain normal Astro files, so they can be tailored without introducing a theme-specific configuration language.
+
+`home.recentPosts` displays at most 5 posts; set it to `0` to hide the section. Footer quotes are on by default. Set `footer.showQuote` to `false` to hide them. Quotes are selected for the build date and rendered directly into HTML, without a client-side layout shift. They change only when the static site is rebuilt.
+
+## Write a post
+
+Add a Markdown file under [src/content/blog](./src/content/blog):
 
 ```markdown
 ---
 title: 'Post title'
-description: 'One-sentence summary'
-publishDate: 2026-08-16
-updatedDate: 2026-08-16 # optional
-heroImage: # optional — local asset relative to this file, optimized at build
+description: 'A concise summary for lists and metadata'
+publishDate: 2026-08-17
+updatedDate: 2026-08-18 # optional
+language: 'English' # optional
+heroImage: # optional local asset, relative to this file
   src: ../../assets/cover.png
   alt: 'Cover description'
-tags: [tag-a, tag-b]
-draft: false # optional, hidden from lists when true
-comment: true # optional, per-post comment toggle
+tags: [astro, writing]
+draft: false # optional; hidden from lists and search, still reachable by URL
+comment: true # optional; per-post comment switch
 ---
 
-Your content here.
+Write in Markdown.
 ```
 
-## Configuration
+Folder posts work too: a file at `src/content/blog/notes/index.md` is published at `/blog/notes` rather than `/blog/notes/index`.
 
-Everything lives in [`src/site.config.ts`](./src/site.config.ts):
+Use a local relative asset for `heroImage` so Astro can generate responsive images at build time. Images in the Markdown body are lazy-loaded and can be opened in the built-in lightbox. For a standalone Markdown image, its `alt` text is also shown as the caption, so make it descriptive.
 
-| Section          | What it controls                                                                         |
-| ---------------- | ---------------------------------------------------------------------------------------- |
-| `site`           | Title, author, avatar, description, language, favicon, OG card                           |
-| `header.menu`    | Navigation links                                                                         |
-| `footer`         | Copyright, extra links, social icons                                                     |
-| `home`           | **Config-driven home page** — hero, posts count, education, skills, tags/friends toggles |
-| `blog.pageSize`  | Posts per page                                                                           |
-| `search.enabled` | Toggle the search page & index                                                           |
-| `comment`        | Waline server URL — leave empty to disable                                               |
-| `friends`        | Friend links rendered on `/links` and (optionally) the home page                         |
+````markdown
+Inline math: $E = mc^2$
 
-### Config-driven home page
+$$
+\int_0^1 x^2\,dx = \frac{1}{3}
+$$
 
-Sections on the home page render automatically from [`src/site.config.ts`](./src/site.config.ts) → `home`:
-
-```ts
-home: {
-  hero: {
-    tagline: 'Developer / Designer / Photographer', // chip above the name
-    location: 'China / QingDao',                    // location chip
-    about: 'A short paragraph about yourself…',
-    buttons: [{ title: 'More about me', link: '/about' }]
-  },
-  recentPosts: 5,        // 0 hides the section
-  education: [{ school: '…', major: '…', degree: '…', date: '…' }],
-  skills: [{ title: 'Program', items: ['Python', 'Java'] }],
-  showTags: false,       // optional tag cloud
-  showFriends: false     // optional friend links
-}
+```mermaid
+flowchart LR
+  Write --> Build --> Publish
 ```
+````
 
-Edit the config — sections appear / disappear without touching any component.
+KaTeX is available on post pages. Mermaid is fetched and rendered in the browser only for a post that contains a Mermaid fence.
 
-## Customizing the look
+## Customize the look
 
-- Design tokens (colors, radius, fonts): [`src/assets/styles/tokens.css`](./src/assets/styles/tokens.css)
-- UnoCSS theme mapping & typography: [`uno.config.ts`](./uno.config.ts)
-- Global styles (code blocks, motion, scrollbar): [`src/assets/styles/global.css`](./src/assets/styles/global.css)
+- [src/assets/styles/tokens.css](./src/assets/styles/tokens.css): palettes, fonts, radii and other design tokens
+- [uno.config.ts](./uno.config.ts): UnoCSS presets, theme mapping and typography
+- [src/assets/styles/global.css](./src/assets/styles/global.css): global layout, code-block and motion rules
+- [src/assets/styles/waline.css](./src/assets/styles/waline.css): Waline import and theme overrides
 
-## Project structure
+## Project layout
 
 ```
 src/
-├── site.config.ts        # all theme configuration
-├── content.config.ts     # blog content-collection schema
-├── assets/styles/        # design tokens + global styles
-├── components/           # Header, Footer, PostCard, Pagination, TOC, Comment
-├── layouts/              # BaseLayout, PostLayout
-├── pages/                # index, blog, tags, archives, links, about, search, rss, 404
-├── utils/                # helpers + server-side collection utilities
-└── content/blog/         # your posts (Markdown)
+├── site-config.ts        # typed site and home-page settings
+├── content.config.ts     # blog collection schema
+├── assets/styles/        # tokens and global/Waline styles
+├── components/           # navigation, cards, TOC, comments and utilities
+├── layouts/              # base and post layouts
+├── pages/                # home, blog, tags, archives, links, about, search, RSS
+├── plugins/              # Markdown image and Shiki transforms
+├── utils/                # URLs, collections, reading time and theme helpers
+└── content/blog/         # Markdown posts
 ```
 
-## Deployment
+## Deploy
 
-`pnpm build` produces a fully static site in `dist/` — host it anywhere (GitHub Pages, Vercel, Netlify, Cloudflare Pages…).
+`pnpm build` produces a static `dist` directory. It can be deployed to GitHub Pages, Vercel, Netlify, Cloudflare Pages, or any host that serves static files.
 
-**Before going live:** set your real domain as `site` in [`astro.config.ts`](./astro.config.ts) — sitemap, canonical links and RSS depend on it.
+Before the first production build, replace the example site URL in [astro.config.ts](./astro.config.ts). The value is used for the sitemap, canonical URLs, Open Graph URLs and RSS.
 
-**Performance:** deploy to a platform with a global CDN and automatic compression — Vercel, Netlify and Cloudflare Pages all enable Brotli/gzip and an image CDN by default, so you get those for free.
+## Credits and license
 
-## Credits & license
-
-Inspired by the design ideas of [astro-theme-pure](https://github.com/cworld1/astro-theme-pure) (Apache-2.0) — same Astro ecosystem, independent implementation. The Shiki code-block pipeline (`src/plugins/shiki-custom-transformers.ts`, `src/plugins/shiki-official/`, `public/icons/code.svg`) is ported from astro-theme-pure (Apache-2.0). Licensed under [MIT](./LICENSE).
+The design takes inspiration from [astro-theme-pure](https://github.com/cworld1/astro-theme-pure) (Apache-2.0), while the theme itself is an independent implementation. The Shiki code-block pipeline in `src/plugins/shiki-custom-transformers.ts`, `src/plugins/shiki-official` and `public/icons/code.svg` is ported from that project under Apache-2.0. This repository is released under the [MIT License](./LICENSE).

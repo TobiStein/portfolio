@@ -341,9 +341,17 @@ hr {
   border-color: hsl(var(--line) / 1);
 }
 
-/* Let prose fill its column (article pages) instead of the 65ch cap */
+/* Set the prose root directly; the typography preset's extensions target descendants. */
+.prose {
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  letter-spacing: 0.012em;
+}
+
 .prose.prose-fill {
-  max-width: none;
+  width: 100%;
+  max-width: 45rem;
+  margin-inline: auto;
 }
 
 /* Search highlight */

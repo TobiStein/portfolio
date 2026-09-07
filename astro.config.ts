@@ -23,6 +23,7 @@ import {
 } from './src/plugins/shiki-official/transformers.ts'
 // Lazy-load Markdown images
 import rehypeImageAttributes from './src/plugins/rehype-image-attributes.ts'
+import rehypeContentFeatures from './src/plugins/rehype-content-features.ts'
 
 // Sub-path base, used when deployed under a project Pages URL
 // (e.g. /astro-theme-ink/). Empty locally & for user/project root deploys.
@@ -46,7 +47,7 @@ export default defineConfig({
   // [Markdown]
   markdown: {
     remarkPlugins: [remarkMath],
-    rehypePlugins: [rehypeImageAttributes, rehypeKatex],
+    rehypePlugins: [rehypeImageAttributes, rehypeKatex, rehypeContentFeatures],
     shikiConfig: {
       themes: {
         light: 'github-light',

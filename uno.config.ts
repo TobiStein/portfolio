@@ -46,13 +46,7 @@ const typography: TypographyOptions = {
     'td-borders': line
   },
   cssExtend: {
-    // Root: airy reading rhythm
-    '.prose': {
-      'font-size': '1.0625rem',
-      'line-height': '1.85',
-      'letter-spacing': '0.012em'
-    },
-
+    // Root typography lives in global.css: cssExtend targets descendants.
     // Headings — serif, balanced, breathing margins
     '.prose h1,.prose h2,.prose h3,.prose h4,.prose h5,.prose h6': {
       'font-family': 'var(--font-serif)',
@@ -85,22 +79,22 @@ const typography: TypographyOptions = {
     '.prose h1:target>a,.prose h2:target>a,.prose h3:target>a,.prose h4:target>a,.prose h5:target>a,.prose h6:target>a':
       { opacity: '1' },
 
-    // Links: animated ink underline that draws in on hover
+    // Links remain recognizable on touch devices, with stronger emphasis on interaction.
     '.prose a': {
       'font-weight': '500',
       color: ink,
-      'text-decoration': 'none',
-      'background-image': 'linear-gradient(currentColor, currentColor)',
-      'background-size': '0% 1.5px',
-      'background-repeat': 'no-repeat',
-      'background-position': '0 92%',
-      transition: 'color 0.2s ease, background-size 0.3s ease',
+      'text-decoration': 'underline',
+      'text-decoration-color': 'hsl(var(--accent) / 0.45)',
+      'text-decoration-thickness': '1px',
+      'text-underline-offset': '0.18em',
+      transition: 'color 0.2s ease, text-decoration-color 0.2s ease',
       'word-break': 'break-word'
     },
-    '.prose a:hover': {
+    '.prose a:hover,.prose a:focus-visible': {
       color: accent,
-      'background-size': '100% 1.5px'
+      'text-decoration-color': 'hsl(var(--accent) / 0.9)'
     },
+    '.prose :is(h1,h2,h3,h4,h5,h6)>a': { 'text-decoration': 'none' },
 
     // Inline code: little paper chips
     '.prose :not(pre) > code': {
@@ -117,17 +111,17 @@ const typography: TypographyOptions = {
     '.prose :not(pre) > code::before': { content: 'none' },
     '.prose :not(pre) > code::after': { content: 'none' },
 
-    // Blockquote: ink bar + soft wash, serif italic voice
+    // Blockquote: a quiet margin rule, with upright text for comfortable CJK reading.
     '.prose blockquote': {
       'font-family': 'var(--font-serif)',
-      'font-style': 'italic',
-      position: 'relative',
-      'border-inline-start': 'none',
-      'border-radius': '0.65rem',
-      'background-color': 'hsl(var(--wash) / 0.55)',
-      'box-shadow': 'inset 3px 0 0 hsl(var(--accent) / 0.55)',
-      'padding-block': '0.55rem',
-      'padding-inline': '1.4rem'
+      'font-style': 'normal',
+      'font-weight': '400',
+      'border-inline-start': '2px solid hsl(var(--accent) / 0.35)',
+      'border-radius': '0',
+      'background-color': 'transparent',
+      'box-shadow': 'none',
+      'padding-block': '0.1rem',
+      'padding-inline': '1.2rem'
     },
 
     // Lists: custom elegant markers
@@ -205,6 +199,8 @@ const typography: TypographyOptions = {
     '.prose tbody tr:hover': { 'background-color': 'hsl(var(--wash) / 0.5)' },
 
     // Images & captions
+    '.prose figure': { margin: '1.8em auto' },
+    '.prose figure > img,.prose figure > .lb-trigger': { margin: '0 auto' },
     '.prose img': {
       'border-radius': 'calc(var(--radius) * 1.25)',
       margin: '1.5em auto',
@@ -213,6 +209,7 @@ const typography: TypographyOptions = {
     '.prose figcaption': {
       'text-align': 'center',
       'font-size': '0.85em',
+      'line-height': '1.5',
       color: 'hsl(var(--ink-soft) / 1)',
       'margin-top': '0.4em'
     },
@@ -271,9 +268,13 @@ export default defineConfig({
     }
   },
   shortcuts: {
+    // Article lists use open rows; other card-based components keep their own surfaces.
+    'post-row': 'border-b border-line/60 py-6 last:border-b-0 sm:py-7',
+    'tag-link':
+      'inline-flex min-h-6 items-center gap-1 text-xs text-ink-soft underline-offset-4 transition-colors duration-200 hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline',
     // Paper card
     'paper-card':
-      'rounded-xl border border-line bg-card/60 backdrop-blur-sm transition-all duration-300 hover:border-accent/40 hover:shadow-sm',
+      'rounded-xl border border-line bg-card/60 transition-all duration-300 hover:border-accent/40 hover:shadow-sm',
     // Pill chip (tags, meta)
     chip: 'inline-flex items-center gap-1 rounded-full border border-line bg-wash px-2.5 py-0.5 text-xs text-ink-soft transition-colors duration-200 hover:border-accent/50 hover:text-accent',
     // Text link with underline animation

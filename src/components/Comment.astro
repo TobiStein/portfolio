@@ -3,7 +3,7 @@ import { config } from '@/site-config'
 
 // Waline stylesheet + our overrides live together in waline.css (import
 // order guarantees our rules win) — see src/assets/styles/waline.css
-import '@/assets/styles/waline.css'
+import walineStylesheet from '@/assets/styles/waline.css?url'
 
 const server = config.comment.server
 const enabled = config.comment.provider === 'waline' && server !== ''
@@ -12,6 +12,7 @@ const enabled = config.comment.provider === 'waline' && server !== ''
 {
   enabled && (
     <section class="not-prose mt-14" aria-label="Comments">
+      <link rel="stylesheet" href={walineStylesheet} />
       <h2 class="mb-4 flex items-center gap-2 font-serif text-lg font-semibold">
         <span class="i-lucide-message-square size-4 text-accent" aria-hidden="true" />
         Comments

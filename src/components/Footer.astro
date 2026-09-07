@@ -2,97 +2,73 @@
 import { SOCIAL_ICONS, withBase } from '@/utils'
 import { config } from '@/site-config'
 import SitePageview from '@/components/SitePageview.astro'
+import FooterQuote from '@/components/FooterQuote.astro'
 
 const year = new Date().getFullYear()
 const copyright = config.footer.copyright ?? `© ${year} ${config.site.author}`
-
-const social = Object.entries(config.footer.social ?? {})
 const footerLinks = config.footer.links ?? []
-const socialItems = social.map(([key, item]) => ({
+const socialItems = Object.entries(config.footer.social ?? {}).map(([key, item]) => ({
   ...item,
   icon: SOCIAL_ICONS[key] ?? 'i-lucide-link'
 }))
+const footerLink =
+  'inline-flex min-h-6 items-center underline-offset-4 transition-colors hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline'
 ---
 
-<footer class="not-prose border-t border-line py-8 text-sm text-ink-soft">
-  <p class="mb-4 text-center font-serif text-xs italic text-ink-soft/70">
-    <span class="footer-quote"></span>
-  </p>
-  <div class="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-    <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
-      <span>{copyright}</span>
-      {
-        footerLinks.map((link) => (
-          <>
-            <span aria-hidden="true">·</span>
-            <a href={withBase(link.url)} class="link-ink">
-              {link.title}
-            </a>
-          </>
-        ))
-      }
-      <span aria-hidden="true">·</span>
-      <span>
-        Powered by <a href="https://astro.build" target="_blank" rel="noreferrer" class="link-ink"
-          >Astro</a
-        >
-      </span>
-      <SitePageview />
-    </p>
+<footer
+  class="not-prose border-t border-line/60 py-7 text-xs leading-relaxed text-ink-soft sm:py-8"
+>
+  <div class="mx-auto max-w-[47.5rem]">
+    {config.footer.showQuote && <FooterQuote />}
 
-    {
-      socialItems.length > 0 && (
-        <div class="flex items-center gap-2">
-          {socialItems.map((item) => (
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={item.label}
-              title={item.label}
-              class="icon-link size-8"
-            >
-              <span class={`${item.icon} size-5`} aria-hidden="true" />
-            </a>
-          ))}
-        </div>
-      )
-    }
+    <div class="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
+      <p>{copyright}</p>
+      {
+        socialItems.length > 0 && (
+          <nav aria-label="Social links" class="flex items-center gap-1">
+            {socialItems.map((item) => (
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={item.label}
+                title={item.label}
+                class="inline-flex size-8 items-center justify-center transition-colors hover:text-accent focus-visible:text-accent"
+              >
+                <span class={`${item.icon} size-4`} aria-hidden="true" />
+              </a>
+            ))}
+          </nav>
+        )
+      }
+    </div>
+
+    <div class="mt-2 flex flex-col items-center gap-2 sm:flex-row sm:justify-between sm:gap-4">
+      {
+        footerLinks.length > 0 && (
+          <nav
+            aria-label="Footer links"
+            class="flex flex-wrap justify-center gap-x-4 gap-y-1 sm:justify-start"
+          >
+            {footerLinks.map((link) => (
+              <a href={withBase(link.url)} class={footerLink}>
+                {link.title}
+              </a>
+            ))}
+          </nav>
+        )
+      }
+      <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:ms-auto">
+        <span>
+          Powered by <a
+            href="https://astro.build"
+            target="_blank"
+            rel="noreferrer"
+            class={footerLink}>Astro</a
+          >
+        </span>
+        <SitePageview />
+      </div>
+    </div>
   </div>
 </footer>
-
-<script>
-  // Random quote of the day (local array — no external service).
-  const quotes = [
-    'Talk is cheap. Show me the code. — Linus Torvalds',
-    'Simplicity is the ultimate sophistication. — Leonardo da Vinci',
-    'The best way to predict the future is to invent it. — Alan Kay',
-    'Any sufficiently advanced technology is indistinguishable from magic. — Arthur C. Clarke',
-    'Programs must be written for people to read, and only incidentally for machines to execute. — Hal Abelson',
-    'Premature optimization is the root of all evil. — Donald Knuth',
-    'Make it work, make it right, make it fast. — Kent Beck',
-    'The only way to do great work is to love what you do. — Steve Jobs',
-    'Stay hungry, stay foolish. — Steve Jobs',
-    'Simplicity is a prerequisite for reliability. — Edsger Dijkstra',
-    'First, solve the problem. Then, write the code. — John Johnson',
-    'Debugging is twice as hard as writing the code in the first place. — Brian Kernighan',
-    'There are only two hard things in Computer Science: cache invalidation and naming things. — Phil Karlton',
-    'Walking on water and developing software from a specification are easy if both are frozen. — Edward V. Berard',
-    "It's not at all important to get it right the first time. It's vitally important to get it right the last time. — Andrew Hunt",
-    'Measuring programming progress by lines of code is like measuring aircraft building progress by weight. — Bill Gates',
-    'In the middle of difficulty lies opportunity. — Albert Einstein',
-    "It always seems impossible until it's done. — Nelson Mandela",
-    'The only true wisdom is in knowing you know nothing. — Socrates',
-    "Life is what happens when you're busy making other plans. — John Lennon",
-    "Whether you think you can or you think you can't, you're right. — Henry Ford",
-    'Success is not final, failure is not fatal: it is the courage to continue that counts. — Winston Churchill',
-    'Not all those who wander are lost. — J.R.R. Tolkien',
-    'The journey of a thousand miles begins with a single step. — Lao Tzu',
-    'The unexamined life is not worth living. — Socrates',
-    'Simplicity is the soul of efficiency. — Austin Freeman',
-    'Knowledge is power. — Francis Bacon',
-    'The purpose of our lives is to be happy. — Dalai Lama'
-  ]
-  const el = document.querySelector('.footer-quote')
-  if (el) el.textContent = quotes[Math.floor(Math.random() * quotes.length)]
-</script>

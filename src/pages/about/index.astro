@@ -23,10 +23,12 @@ import { withBase } from '@/utils'
       </blockquote>
 
       <h2>About me</h2>
-      <p>
-        Replace this with your introduction: who you are, what you do, and what you care about. Talk
-        tech, life, or anything you would like to share.
-      </p>
+      {
+        config.home.hero.about
+          .split(/\n\s*\n/)
+          .filter(Boolean)
+          .map((paragraph) => <p>{paragraph}</p>)
+      }
 
       <h2>Tech stack</h2>
       <ul>

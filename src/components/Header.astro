@@ -11,7 +11,7 @@ function isActive(link: string): boolean {
 }
 ---
 
-<header class="site-header not-prose sticky top-0 z-40" id="site-header">
+<header class="site-header not-prose sticky top-0 z-40 w-full shrink-0" id="site-header">
   <div class="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-5 sm:px-8">
     <!-- Brand -->
     <a href={withBase('/')} class="group flex items-center gap-2" aria-label={config.site.title}>
@@ -43,7 +43,13 @@ function isActive(link: string): boolean {
     <div class="flex items-center gap-1">
       {
         config.search.enabled && (
-          <a href={withBase('/search')} title="Search" aria-label="Search" class="icon-btn" data-astro-prefetch>
+          <a
+            href={withBase('/search')}
+            title="Search"
+            aria-label="Search"
+            class="icon-btn"
+            data-astro-prefetch
+          >
             <span class="i-lucide-search size-5" aria-hidden="true" />
           </a>
         )
@@ -68,8 +74,8 @@ function isActive(link: string): boolean {
         title="Toggle theme"
       >
         <span class="i-lucide-monitor icon-system size-5" aria-hidden="true"></span>
-        <span class="i-lucide-sun icon-light hidden size-5" aria-hidden="true"></span>
-        <span class="i-lucide-moon icon-dark hidden size-5" aria-hidden="true"></span>
+        <span class="i-lucide-sun icon-light size-5" aria-hidden="true"></span>
+        <span class="i-lucide-moon icon-dark size-5" aria-hidden="true"></span>
       </button>
     </div>
   </div>
@@ -83,7 +89,7 @@ function isActive(link: string): boolean {
   {
     config.header.menu.map((item) => (
       <a
-        href={withBase(item.link)}
+        href={item.link}
         aria-current={isActive(item.link) ? 'page' : undefined}
         class={[
           'flex-none rounded-md px-3 py-1 text-sm transition-colors duration-200',
@@ -108,6 +114,7 @@ function isActive(link: string): boolean {
   .site-header.scrolled {
     background-color: color-mix(in srgb, hsl(var(--paper) / 1) 82%, transparent);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom-color: hsl(var(--line) / 1);
   }
   :global(.dark) .site-header.scrolled {
@@ -141,109 +148,30 @@ function isActive(link: string): boolean {
   }
 
   /* Theme icons: only the icon matching [data-theme] is shown */
-  #theme-toggle[data-theme='light'] .icon-light,
-  #theme-toggle[data-theme='dark'] .icon-dark,
-  #theme-toggle[data-theme='system'] .icon-system {
+  #theme-toggle .icon-system,
+  #theme-toggle .icon-light,
+  #theme-toggle .icon-dark {
+    display: none;
+  }
+
+  :global(html[data-theme='light']) #theme-toggle .icon-light,
+  :global(html[data-theme='dark']) #theme-toggle .icon-dark,
+  :global(html[data-theme='system']) #theme-toggle .icon-system {
     display: inline-block;
   }
 
   /* Palette icons: feather (ink) by default, leaf (fresh) when active */
-  #palette-toggle[data-palette='fresh'] .icon-ink {
+  :global(html[data-palette='fresh']) #palette-toggle .icon-ink {
     display: none;
   }
-  #palette-toggle[data-palette='fresh'] .icon-fresh {
+  :global(html[data-palette='fresh']) #palette-toggle .icon-fresh {
     display: inline-block;
   }
 </style>
 
-<script is:inline>
-  // Inline & synchronous on purpose: a deferred module script binds the
-  // toggle handlers only after the whole HTML is parsed, so the first
-  // click on a freshly opened page would be missed. With is:inline the
-  // handlers exist as soon as this header markup is parsed.
-  // THEME_COLORS duplicates src/utils/theme.ts (kept in sync manually).
-  const THEME_COLORS = {
-    ink: { light: '#faf8f5', dark: '#181511' },
-    fresh: { light: '#f5f7fa', dark: '#11161d' }
-  }
-  const themeColorHex = (palette, dark) => THEME_COLORS[palette][dark ? 'dark' : 'light']
-
+<script>
   const header = document.getElementById('site-header')
-  const toggle = document.getElementById('theme-toggle')
-  const paletteToggle = document.getElementById('palette-toggle')
-
-  // Frosted bar on scroll
   const onScroll = () => header?.classList.toggle('scrolled', window.scrollY > 8)
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
-
-  // Keep the browser chrome color in sync with palette + mode
-  const syncThemeColor = () => {
-    const meta = document.querySelector('meta[name="theme-color"]')
-    if (!meta) return
-    const palette = document.documentElement.dataset.palette || 'ink'
-    meta.setAttribute(
-      'content',
-      themeColorHex(palette, document.documentElement.classList.contains('dark'))
-    )
-  }
-
-  // Storage access that never throws (private mode / disabled storage)
-  const storage = {
-    get: (key) => {
-      try {
-        return localStorage.getItem(key)
-      } catch {
-        return null
-      }
-    },
-    set: (key, value) => {
-      try {
-        localStorage.setItem(key, value)
-      } catch {
-        /* storage unavailable — ignore */
-      }
-    }
-  }
-
-  // Theme: system -> light -> dark
-  const THEME_KEY = 'ink-theme'
-  const order = ['system', 'light', 'dark']
-  const applyTheme = (theme) => {
-    const dark =
-      theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
-    document.documentElement.classList.toggle('dark', dark)
-    document.documentElement.dataset.theme = theme
-    if (toggle) toggle.dataset.theme = theme
-    syncThemeColor()
-  }
-  toggle?.addEventListener('click', () => {
-    // brief cross-fade while the theme class flips
-    document.documentElement.classList.add('theme-switching')
-    window.setTimeout(() => document.documentElement.classList.remove('theme-switching'), 300)
-    const current = storage.get(THEME_KEY) || 'system'
-    const next = order[(order.indexOf(current) + 1) % order.length]
-    storage.set(THEME_KEY, next)
-    applyTheme(next)
-  })
-  if (toggle) toggle.dataset.theme = document.documentElement.dataset.theme || 'system'
-
-  // Palette: ink (warm) <-> fresh (mint)
-  const PALETTE_KEY = 'ink-palette'
-  const applyPalette = (palette) => {
-    document.documentElement.classList.toggle('fresh', palette === 'fresh')
-    document.documentElement.dataset.palette = palette
-    if (paletteToggle) paletteToggle.dataset.palette = palette
-    syncThemeColor()
-  }
-  paletteToggle?.addEventListener('click', () => {
-    document.documentElement.classList.add('theme-switching')
-    window.setTimeout(() => document.documentElement.classList.remove('theme-switching'), 300)
-    const current = document.documentElement.dataset.palette || 'ink'
-    const next = current === 'ink' ? 'fresh' : 'ink'
-    storage.set(PALETTE_KEY, next)
-    applyPalette(next)
-  })
-  if (paletteToggle)
-    paletteToggle.dataset.palette = document.documentElement.dataset.palette || 'ink'
 </script>

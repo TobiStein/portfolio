@@ -39,6 +39,8 @@ export interface HomeHeroConfig {
   location?: string
   /** About paragraph under the name */
   about: string
+  /** Short homepage introduction; falls back to the first paragraph of about. */
+  summary?: string
   /** Action buttons */
   buttons?: { title: string; link: string }[]
 }
@@ -46,7 +48,7 @@ export interface HomeHeroConfig {
 /** Home page content — edit this file and sections appear/disappear automatically. */
 export interface HomeConfig {
   hero: HomeHeroConfig
-  /** How many recent posts to show (0 hides the section) */
+  /** How many recent posts to show; capped at 5 (0 hides the section). */
   recentPosts: number
   /** Education timeline; renders when non-empty */
   education?: EducationItem[]
@@ -92,6 +94,8 @@ export interface Config {
     siteWide: boolean
   }
   footer: {
+    /** Show a quote selected at build time; omitted or false keeps the footer quiet. */
+    showQuote?: boolean
     /** Shown as `© <year> <author>`; set a custom string to override entirely */
     copyright?: string
     /** Extra plain-text links rendered next to the copyright */
@@ -150,6 +154,7 @@ export const config: Config = {
   },
 
   footer: {
+    showQuote: true,
     copyright: `© 2020 - ${new Date().getFullYear()} Hansen W.`,
     links: [
       { title: 'RSS', url: '/rss.xml' },

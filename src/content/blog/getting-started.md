@@ -9,11 +9,11 @@ tags: [主题, 文档]
 
 ## 1. 环境准备
 
-需要 Node.js 18+ 和包管理器（推荐 pnpm，npm/yarn/bun 也可以）：
+需要 Node.js 22+ 和 pnpm：
 
 ```bash
-node -v   # v18.0.0+
-pnpm -v   # 推荐
+node -v   # v22.0.0+
+pnpm -v   # v10+
 ```
 
 ## 2. 获取主题
@@ -98,7 +98,25 @@ pnpm preview    # 本地预览构建结果
 - **Cloudflare Pages**：同上
 - **GitHub Pages**：构建后把 `dist/` 内容推送到 pages 分支
 
-## 7. 清理演示内容
+## 7. 更新主题（主题与博客分开时）
+
+如果把主题放在 `D:/Code/astro-theme-ink`，而真实文章和个人配置放在 `D:/Code/Blog`，主题升级时使用同步脚本，而不是直接复制文件：
+
+```powershell
+cd D:/Code/astro-theme-ink
+pnpm theme:sync --target ../Blog
+pnpm theme:sync --target ../Blog --apply
+
+cd ../Blog
+pnpm test
+pnpm build
+```
+
+第一条只列出变更，第二条才写入。脚本会保留文章、个人图片、域名、部署设置和个人站点配置；将生成的 `.theme-sync.json` 一起提交。需要解决 `REVIEW` 或 `CONFLICT` 时，阅读仓库中的 `docs/theme-sync.md`。
+
+也可以执行 `pnpm theme:sync:ui` 打开本机同步面板，在浏览器中完成目录选择、预览和确认应用。
+
+## 8. 清理演示内容
 
 把 `src/content/blog/` 下的示例文章删掉或改写，把 `public/avatar.png`、`favicon/` 换成你自己的，就完成了。
 

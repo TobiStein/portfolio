@@ -1,5 +1,5 @@
 ---
-import 'katex/dist/katex.min.css'
+import katexStylesheet from 'katex/dist/katex.min.css?url'
 import { Image } from 'astro:assets'
 import type { MarkdownHeading } from 'astro'
 import type { CollectionEntry } from 'astro:content'
@@ -17,9 +17,10 @@ interface Props {
   post: CollectionEntry<'blog'>
   headings: MarkdownHeading[]
   minutesRead: number
+  hasMath?: boolean
 }
 
-const { post, headings, minutesRead } = Astro.props
+const { post, headings, minutesRead, hasMath = false } = Astro.props
 const { data } = post
 const published = data.publishDate
 const updated = data.updatedDate
@@ -44,13 +45,21 @@ const jsonLd = {
 }
 ---
 
-<BaseLayout title={data.title} description={data.description} date={updated ?? published}>
+<BaseLayout
+  title={data.title}
+  description={data.description}
+  date={published}
+  modifiedDate={updated}
+  stylesheets={hasMath ? [katexStylesheet] : []}
+>
   <!-- Reading progress -->
   <div id="reading-progress" aria-hidden="true"></div>
 
   <!-- No entrance animation here: the full article appears immediately
        (an opacity-0 fade-in reads as a dark flash on heavy pages). -->
-  <div class="xl:grid xl:grid-cols-[minmax(0,1fr)_12.5rem] xl:gap-10">
+  <div
+    class="mx-auto max-w-[45rem] xl:grid xl:max-w-none xl:grid-cols-[minmax(0,1fr)_12.5rem] xl:gap-10"
+  >
     <TOC {headings} />
 
     <article class="min-w-0 xl:col-start-1 xl:row-start-1">
@@ -61,7 +70,7 @@ const jsonLd = {
             src={data.heroImage.src}
             alt={data.heroImage.alt ?? data.title}
             widths={[640, 960, 1280]}
-            sizes="(min-width: 1024px) 760px, 100vw"
+            sizes="(min-width: 784px) 720px, (min-width: 640px) calc(100vw - 64px), calc(100vw - 40px)"
             fetchpriority="high"
             loading="eager"
             decoding="async"
