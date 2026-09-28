@@ -4,7 +4,7 @@
 
 ## 1. 开始前
 
-需要 Node.js 22+ 和 pnpm 10。第一次进入博客仓库时安装依赖：
+需要 Node.js 22.12.0+ 和 pnpm 10。第一次进入博客仓库时安装依赖：
 
 ```powershell
 cd D:\Code\Blog

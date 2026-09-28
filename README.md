@@ -38,7 +38,7 @@ The site is fully static. Build it once, then serve the generated files from any
 
 ## Requirements
 
-- A Node.js release supported by Astro 5 (a current LTS release is recommended)
+- Node.js 22.12.0 or newer (required by Astro 7)
 - pnpm; this repository is pinned to pnpm 10.20.0
 
 ## Run it locally

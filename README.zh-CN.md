@@ -38,7 +38,7 @@
 
 ## 环境要求
 
-- 支持 Astro 5 的 Node.js 版本；推荐使用当前 LTS
+- Node.js 22.12.0 或更高版本（Astro 7 的要求）
 - pnpm；仓库通过 pnpm 10.20.0 锁定依赖
 
 ## 本地运行
@@ -57,7 +57,7 @@ pnpm dev
 | `pnpm dev`             | 启动本地开发服务器                                            |
 | `pnpm check`           | 运行 Astro 与 TypeScript 诊断                                 |
 | `pnpm build`           | 先诊断，再生成 `dist` 静态站点                                |
-| `pnpm test`            | 运行 Node 回归测试                                             |
+| `pnpm test`            | 运行 Node 回归测试                                            |
 | `pnpm preview`         | 本地预览构建产物                                              |
 | `pnpm sync`            | 刷新 Astro 生成的类型和内容元数据                             |
 | `pnpm format`          | 用 Prettier 格式化仓库；该命令会写入文件                      |

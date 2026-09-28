@@ -4,6 +4,7 @@ import { defineConfig } from 'astro/config'
 import unocss from '@unocss/astro'
 // Sitemap generation (https://docs.astro.build/en/guides/integrations-guide/sitemap)
 import sitemap from '@astrojs/sitemap'
+import { unified } from '@astrojs/markdown-remark'
 // KaTeX math rendering: $...$ / $$...$$ in Markdown
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -41,13 +42,21 @@ export default defineConfig({
   // The site is fully static, so we can prerender everything.
   output: 'static',
 
+  // Preserve Astro 6's HTML-aware whitespace behavior. Astro 7 defaults to
+  // JSX whitespace rules, which can remove spaces between adjacent inline elements.
+  compressHTML: true,
+
   // Prefetch every internal link on hover/scroll for instant navigation
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
 
   // [Markdown]
   markdown: {
-    remarkPlugins: [remarkMath],
-    rehypePlugins: [rehypeImageAttributes, rehypeKatex, rehypeContentFeatures],
+    // This theme relies on remark/rehype plugins for math, image attributes,
+    // and rendered-content feature detection, so keep the unified pipeline.
+    processor: unified({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [rehypeImageAttributes, rehypeKatex, rehypeContentFeatures]
+    }),
     shikiConfig: {
       themes: {
         light: 'github-light',

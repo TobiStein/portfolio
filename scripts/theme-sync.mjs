@@ -22,6 +22,7 @@ const directories = [
 ]
 const files = new Set([
   'astro.config.ts',
+  '.nvmrc',
   'uno.config.ts',
   'tsconfig.json',
   'package.json',
