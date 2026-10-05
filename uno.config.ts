@@ -289,9 +289,11 @@ export default defineConfig({
   safelist: [
     'i-lucide-github',
     'i-lucide-gitlab',
-    'i-lucide-rss',
+    'i-lucide-linkedin',
     'i-lucide-mail',
     'i-lucide-twitter',
+    'i-lucide-instagram',
+    'i-lucide-rss',
     'i-lucide-globe',
     'i-lucide-link'
   ]

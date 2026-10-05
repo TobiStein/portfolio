@@ -1,0 +1,60 @@
+---
+import { useTranslations, type Locale } from '@/i18n'
+import { cn } from '@/utils'
+
+interface Props {
+  lang: Locale
+  /** Source code URL */
+  repo?: string
+  /** Live demo URL */
+  demo?: string
+  /** `inline`: small text links (lists) · `chip`: pill buttons (project page) */
+  variant?: 'inline' | 'chip'
+  class?: string
+}
+
+const { lang, repo, demo, variant = 'inline', class: className } = Astro.props
+const { t } = useTranslations(lang)
+
+interface ProjectLink {
+  url: string
+  label: string
+  icon: string
+}
+
+function repoIcon(url: string): string {
+  if (/github\.com/i.test(url)) return 'i-lucide-github'
+  if (/gitlab\./i.test(url)) return 'i-lucide-gitlab'
+  return 'i-lucide-code'
+}
+
+const links: ProjectLink[] = []
+if (repo) links.push({ url: repo, label: t('projects.repo'), icon: repoIcon(repo) })
+if (demo) links.push({ url: demo, label: t('projects.demo'), icon: 'i-lucide-external-link' })
+
+const isChip = variant === 'chip'
+---
+
+{
+  links.length > 0 && (
+    <div
+      class={cn(
+        'not-prose flex flex-wrap items-center',
+        isChip ? 'gap-3' : 'gap-x-4 gap-y-1',
+        className
+      )}
+    >
+      {links.map((link) => (
+        <a
+          href={link.url}
+          target="_blank"
+          rel="noreferrer"
+          class={isChip ? 'chip !px-3 !py-1 text-sm' : 'tag-link'}
+        >
+          <span class={cn(link.icon, 'size-3.5')} aria-hidden="true" />
+          {link.label}
+        </a>
+      ))}
+    </div>
+  )
+}

@@ -1,0 +1,60 @@
+---
+import ProjectLinks from '@/components/ProjectLinks.astro'
+import { useTranslations, type Locale } from '@/i18n'
+import { cn } from '@/utils'
+import { entryUrl, getReadingTime, type Entry } from '@/utils/server'
+
+interface Props {
+  /** A blog post or a project */
+  entry: Entry
+  lang: Locale
+  class?: string
+}
+
+const { entry, lang, class: className } = Astro.props
+const { t, date } = useTranslations(lang)
+const { data } = entry
+const shownDate = data.updatedDate ?? data.publishDate
+const minutesRead = getReadingTime(entry)
+const repo = entry.collection === 'projects' ? entry.data.repo : undefined
+const demo = entry.collection === 'projects' ? entry.data.demo : undefined
+const hasFooter = data.tags.length > 0 || Boolean(repo || demo)
+---
+
+<article class={cn('post-row not-prose group relative flex flex-col gap-2', className)}>
+  <h2
+    class="font-serif text-xl font-semibold leading-snug transition-colors duration-200 group-hover:text-accent"
+  >
+    <a href={entryUrl(entry)} data-astro-prefetch class="after:absolute after:inset-0">
+      {data.draft && <span class="me-1 text-accent">[{t('entry.draft')}]</span>}
+      {data.title}
+    </a>
+  </h2>
+
+  <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-ink-soft">
+    <time datetime={shownDate.toISOString()} class="tabular-nums">{date(shownDate)}</time>
+    <span aria-hidden="true">·</span>
+    <span>{t('entry.readingTime', { minutes: minutesRead })}</span>
+  </div>
+
+  <p class="line-clamp-2 text-sm leading-relaxed text-ink-soft">{data.description}</p>
+
+  {
+    hasFooter && (
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-1">
+        {data.tags.length > 0 && (
+          <ul
+            class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-soft"
+            aria-label={t('entry.tags')}
+          >
+            {data.tags.map((tag) => (
+              <li>#{tag}</li>
+            ))}
+          </ul>
+        )}
+        {/* Above the stretched title link so they stay clickable */}
+        <ProjectLinks lang={lang} repo={repo} demo={demo} class="relative z-10" />
+      </div>
+    )
+  }
+</article>

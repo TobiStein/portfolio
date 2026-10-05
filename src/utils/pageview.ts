@@ -36,17 +36,29 @@ export async function recordPageview(
   }
 }
 
-/** Shared display behavior for article and site-wide counters. */
+/**
+ * Shared display behavior for article and site-wide counters.
+ * Optional data attributes on `element` localize the output: `data-locale` (number format),
+ * `data-unavailable` (short label) and `data-unavailable-title` (tooltip); English otherwise.
+ */
 export async function updatePageview(element: HTMLElement | null): Promise<void> {
   if (!element || element.dataset.pageviewState) return
   const number = element.querySelector<HTMLElement>('[data-pageview-value]')
   if (!number) return
   element.dataset.pageviewState = 'loading'
   const label = number.getAttribute('aria-label') || 'views'
+  const {
+    locale,
+    unavailable = 'unavailable',
+    unavailableTitle = 'View count temporarily unavailable'
+  } = element.dataset
   const count = await recordPageview(element.dataset.server || '', element.dataset.path || '')
   if (!element.isConnected) return
   element.dataset.pageviewState = count === null ? 'error' : 'loaded'
-  number.textContent = count === null ? '—' : count.toLocaleString()
-  number.setAttribute('aria-label', count === null ? `${label}: unavailable` : `${label}: ${count}`)
-  if (count === null) number.title = 'View count temporarily unavailable'
+  number.textContent = count === null ? '—' : count.toLocaleString(locale)
+  number.setAttribute(
+    'aria-label',
+    count === null ? `${label}: ${unavailable}` : `${label}: ${count}`
+  )
+  if (count === null) number.title = unavailableTitle
 }

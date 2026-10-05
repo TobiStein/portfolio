@@ -1,186 +1,132 @@
-# astro-theme-ink 墨
+# Tobi Stein — portfolio
 
-[English](./README.md) · [简体中文](./README.zh-CN.md)
+Portfolio bilingue (français / anglais) de Tobi Stein, construit avec [Astro](https://astro.build) et [UnoCSS](https://unocss.dev). Trois rubriques : **Projets**, **Blog** et **À propos**, chacune disponible en `/fr/` et en `/en/`.
 
-A warm, paper-feel personal blog theme built with [Astro](https://astro.build) and [UnoCSS](https://unocss.dev). It keeps the palette quiet, gives headings a serif voice, and leaves enough room for long-form writing to breathe.
+Le site est entièrement statique : on le construit une fois, puis on publie le dossier `dist` sur n’importe quel hébergeur de fichiers statiques.
 
-The site is fully static. Build it once, then serve the generated files from any static host.
+## Prérequis
 
-## Screenshots
+- Node.js 22.12.0 ou plus récent (exigé par Astro 7)
+- pnpm (version épinglée : 10.20.0)
 
-<p>
-  <img src="public/images/home-ink.png" alt="Home page in the ink palette" width="49%" />
-  <img src="public/images/home-fresh.png" alt="Home page in the fresh palette" width="49%" />
-</p>
-
-<p>
-  <img src="public/images/blog-content-ink.png" alt="Article page in the ink palette" width="49%" />
-  <img src="public/images/blog-content-fresh.png" alt="Article page in the fresh palette" width="49%" />
-</p>
-
-<p>
-  <img src="public/images/blog-index.png" alt="Blog index page" width="32%" />
-  <img src="public/images/about.png" alt="About page" width="32%" />
-  <img src="public/images/links.png" alt="Friend links page" width="32%" />
-</p>
-
-## What is included
-
-- Blog pages with pagination, tags, yearly archives, RSS and sitemap
-- A small, build-time search index searched in the browser; no third-party search service
-- Light, dark and system themes, applied before first paint; warm ink and cool fresh palettes can be switched independently
-- A configuration-driven home page with recent posts, education, skills, tag cloud and friend-link sections
-- Sticky desktop table of contents, mobile table of contents, reading progress, reading-time estimates, and previous/next links
-- Responsive local cover images, lazy-loaded article images, and click-to-zoom image viewing
-- Markdown extras: KaTeX math, Mermaid diagrams, Shiki highlighting, line highlights/diffs, code titles, copy buttons and automatic folding after 15 lines
-- Optional Waline comments, per-post page views and a footer-wide visit counter
-- Canonical URLs, Open Graph and Twitter metadata, JSON-LD BlogPosting data, RSS full text and sitemap generation
-
-## Requirements
-
-- Node.js 22.12.0 or newer (required by Astro 7)
-- pnpm; this repository is pinned to pnpm 10.20.0
-
-## Run it locally
+## Démarrer
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-The development server listens on <http://localhost:4321> by default.
+Le serveur de développement répond sur <http://localhost:4321>.
 
-For the day-to-day blogging and release workflow, see the [detailed blog guide](./docs/blog-guide.md). It explains the separation between a theme and a real blog, configuration, post URLs, captions, code and math, drafts, release checks and theme synchronization.
+| Commande               | Rôle                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `pnpm dev`             | Serveur de développement local                                                                               |
+| `pnpm build`           | Vérifie le code (`astro check`) puis génère le site dans `dist`                                              |
+| `pnpm preview`         | Prévisualise le site construit                                                                               |
+| `pnpm test`            | Lance les tests Node (`tests/*.test.mjs`)                                                                    |
+| `pnpm check`           | Diagnostics Astro et TypeScript                                                                              |
+| `pnpm format`          | Formate le dépôt avec Prettier (modifie les fichiers)                                                        |
+| `pnpm optimize:avatar` | Crée `public/avatar.webp` (256 × 256) depuis `public/avatar2.png` ou `pnpm optimize:avatar chemin/photo.png` |
 
-| Command                | Purpose                                                               |
-| ---------------------- | --------------------------------------------------------------------- |
-| `pnpm dev`             | Start the local development server                                    |
-| `pnpm check`           | Run Astro and TypeScript diagnostics                                  |
-| `pnpm build`           | Run diagnostics, then create the static site in `dist`                |
-| `pnpm test`            | Run the Node regression suite                                         |
-| `pnpm preview`         | Preview the built site locally                                        |
-| `pnpm sync`            | Refresh Astro-generated types and content metadata                    |
-| `pnpm format`          | Format the repository with Prettier; this command writes files        |
-| `pnpm optimize:avatar` | Create `public/avatar.webp` from `public/avatar.png` (256 × 256 WebP) |
+## Où modifier quoi
 
-## Sync the theme into a blog
+| Fichier                                                        | Contenu                                                                                                  |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [src/site-config.ts](./src/site-config.ts)                     | Informations personnelles : nom, description, menu, réseaux sociaux, bio, formation, compétences, Waline |
+| [src/i18n/ui.ts](./src/i18n/ui.ts)                             | Textes de l’interface (boutons, titres, libellés) en français et en anglais                              |
+| [src/assets/styles/tokens.css](./src/assets/styles/tokens.css) | Couleurs, polices, arrondis                                                                              |
+| `public/avatar2.png`                                           | Photo de profil (chemin réglé par `site.avatar`)                                                         |
+| `public/og-card.svg` → `og-card.png`                           | Image d’aperçu lors du partage d’un lien (`site.ogImage`) ; après modification du SVG, régénérez le PNG : `node -e "require('sharp')('public/og-card.svg').png().toFile('public/og-card.png')"` |
+| `public/favicon/`                                              | Icônes du site et `site.webmanifest`                                                                     |
 
-When the theme and the real blog live in separate repositories, always preview first and then apply the approved changes:
+Dans `src/site-config.ts`, les textes visibles s’écrivent une fois par langue : `{ fr: '…', en: '…' }`. **Un champ laissé vide (`''`, `[]`) est simplement masqué sur le site** : remplissez-le quand vous êtes prêt (liens GitHub / LinkedIn / e-mail, formation, etc.).
 
-```powershell
-cd D:/Code/astro-theme-ink
-pnpm theme:sync --target ../Blog
-pnpm theme:sync --target ../Blog --apply
+Couleurs : la palette personnalisée est le bloc **ink** de `tokens.css` (`:root` pour le mode clair, `.dark` pour le mode sombre). La palette proposée par défaut aux nouveaux visiteurs est réglée par `site.palette`, qui vaut actuellement `'fresh'` : passez-la à `'ink'` pour afficher vos couleurs par défaut. Le bouton palette de l’en-tête permet toujours de basculer de l’une à l’autre.
+
+## Ajouter un article ou un projet
+
+Chaque contenu existe dans un dossier par langue. **Un même nom de fichier dans `fr/` et `en/` relie les deux traductions** : le bouton FR / EN passe alors directement de l’une à l’autre.
+
+```text
+src/content/
+├── blog/
+│   ├── fr/hello-world.md      →  /fr/blog/hello-world
+│   └── en/hello-world.md      →  /en/blog/hello-world
+└── projects/
+    ├── fr/project-alpha.md    →  /fr/projects/project-alpha
+    └── en/project-alpha.md    →  /en/projects/project-alpha
 ```
 
-The first command does not modify the blog. If you are already in the blog directory, explicitly name the theme source instead:
+Si une traduction manque, la page reste publiée dans sa langue et le bouton FR / EN mène à la liste (blog ou projets) de l’autre langue.
 
-```powershell
-pnpm theme:sync --source ../astro-theme-ink --target .
-pnpm theme:sync --source ../astro-theme-ink --target . --apply
-```
-
-Run `pnpm test` and `pnpm build` in the blog after applying. Commit `.theme-sync.json` with the update. The script preserves posts, personal assets, domains and deployment settings; resolve `REVIEW` or `CONFLICT` results with the [sync guide](./docs/theme-sync.md).
-
-For a local visual panel instead of the command line, run:
-
-```powershell
-pnpm theme:sync:ui
-```
-
-It opens `http://127.0.0.1:4175`, where you can set both directories, preview changes and explicitly apply them. The server listens only on the local machine. Use `--port 4300` to change the port or `--no-open` to print the address without opening a browser.
-
-## Configure the site
-
-Core site settings live in [src/site-config.ts](./src/site-config.ts). The file is typed, and most day-to-day changes belong there rather than in a component.
-
-| Section          | Controls                                                                                       |
-| ---------------- | ---------------------------------------------------------------------------------------------- |
-| `site`           | Title, author, description, language, favicon, avatar, social image, default palette and theme |
-| `header.menu`    | Header navigation                                                                              |
-| `home`           | Hero content, recent-post count, education, skills, and optional tag/friend sections           |
-| `footer`         | Copyright text, footer links and social links                                                  |
-| `blog.pageSize`  | Number of posts per blog page                                                                  |
-| `search.enabled` | Whether the search entry point and search UI are shown                                         |
-| `pageview`       | Waline endpoint for article views and the optional site-wide counter                           |
-| `comment`        | Waline endpoint for comments                                                                   |
-| `friends`        | Items displayed on the `/links` page and, when enabled, on the home page                       |
-
-Comments and counters are deliberately separate settings. Point both at the same Waline server if you want both features; leave either endpoint empty to disable that feature. Comments are loaded only when their section approaches the viewport.
-
-The pages under [src/pages](./src/pages) and the prose on the About page remain normal Astro files, so they can be tailored without introducing a theme-specific configuration language.
-
-`home.recentPosts` displays at most 5 posts; set it to `0` to hide the section. Footer quotes are on by default. Set `footer.showQuote` to `false` to hide them. Quotes are selected for the build date and rendered directly into HTML, without a client-side layout shift. They change only when the static site is rebuilt.
-
-## Write a post
-
-Add a Markdown file under [src/content/blog](./src/content/blog):
+### Article de blog
 
 ```markdown
 ---
-title: 'Post title'
-description: 'A concise summary for lists and metadata'
-publishDate: 2026-08-17
-updatedDate: 2026-08-18 # optional
-language: 'English' # optional
-heroImage: # optional local asset, relative to this file
-  src: ../../assets/cover.png
-  alt: 'Cover description'
-tags: [astro, writing]
-draft: false # optional; hidden from lists and search, still reachable by URL
-comment: true # optional; per-post comment switch
+title: 'Titre de l’article' # 80 caractères max
+description: 'Résumé affiché dans les listes et les aperçus' # 200 caractères max
+publishDate: 2026-10-05
+updatedDate: 2026-10-12 # facultatif
+tags: [astro, notes]
+heroImage: # facultatif, image locale relative à ce fichier
+  src: ../../../assets/cover.png
+  alt: 'Description de l’image'
+draft: false # facultatif ; true = absent des listes mais accessible par son URL
+comment: true # facultatif ; active les commentaires sous cet article
 ---
 
-Write in Markdown.
+Le texte en Markdown.
 ```
 
-Folder posts work too: a file at `src/content/blog/notes/index.md` is published at `/blog/notes` rather than `/blog/notes/index`.
+### Projet
 
-Use a local relative asset for `heroImage` so Astro can generate responsive images at build time. Images in the Markdown body are lazy-loaded and can be opened in the built-in lightbox. For a standalone Markdown image, its `alt` text is also shown as the caption, so make it descriptive.
+```markdown
+---
+title: 'Nom du projet'
+description: 'Une ou deux phrases de présentation'
+publishDate: 2026-10-05 # sert au tri, du plus récent au plus ancien
+updatedDate: 2026-10-12 # facultatif
+tags: [astro, typescript]
+repo: 'https://github.com/…' # facultatif, lien vers le code source
+demo: 'https://…' # facultatif, lien vers la démo / le site
+heroImage: # facultatif, même format que pour le blog
+  src: ../../../assets/projet.png
+  alt: 'Capture d’écran'
+draft: false # facultatif
+---
 
-````markdown
-Inline math: $E = mc^2$
-
-$$
-\int_0^1 x^2\,dx = \frac{1}{3}
-$$
-
-```mermaid
-flowchart LR
-  Write --> Build --> Publish
-```
-````
-
-KaTeX is available on post pages. Mermaid is fetched and rendered in the browser only for a post that contains a Mermaid fence.
-
-## Customize the look
-
-- [src/assets/styles/tokens.css](./src/assets/styles/tokens.css): palettes, fonts, radii and other design tokens
-- [uno.config.ts](./uno.config.ts): UnoCSS presets, theme mapping and typography
-- [src/assets/styles/global.css](./src/assets/styles/global.css): global layout, code-block and motion rules
-- [src/assets/styles/waline.css](./src/assets/styles/waline.css): Waline import and theme overrides
-
-## Project layout
-
-```
-src/
-├── site-config.ts        # typed site and home-page settings
-├── content.config.ts     # blog collection schema
-├── assets/styles/        # tokens and global/Waline styles
-├── components/           # navigation, cards, TOC, comments and utilities
-├── layouts/              # base and post layouts
-├── pages/                # home, blog, tags, archives, links, about, search, RSS
-├── plugins/              # Markdown image and Shiki transforms
-├── utils/                # URLs, collections, reading time and theme helpers
-└── content/blog/         # Markdown posts
+Contexte, fonctionnalités, technologies, ce que j’ai appris…
 ```
 
-## Deploy
+Les contenus fournis (`hello-world`, `project-alpha`, `project-beta`) sont des exemples en lorem ipsum : supprimez-les ou remplacez-les.
 
-`pnpm build` produces a static `dist` directory. It can be deployed to GitHub Pages, Vercel, Netlify, Cloudflare Pages, or any host that serves static files.
+## Langues
 
-The site URL and base path are read from the `SITE_URL` and `BASE_PATH` environment variables (see [astro.config.ts](./astro.config.ts)). The bundled GitHub Pages workflow sets both automatically. On other hosts, set `SITE_URL` to your production origin — it feeds the sitemap, canonical URLs, Open Graph URLs and RSS — and set `BASE_PATH` only when the site lives under a sub-path such as `/blog/`.
+- Toutes les pages existent sous `/fr/…` et `/en/…` ; le français est la langue par défaut.
+- Le bouton **FR / EN** de l’en-tête ouvre la même page dans l’autre langue et mémorise le choix dans le navigateur.
+- La racine `/` redirige vers `/fr/` ou `/en/` : d’abord la langue mémorisée, sinon celle du navigateur, sinon le français.
+- Chaque langue a son flux RSS : `/fr/rss.xml` et `/en/rss.xml`.
 
-## Credits and license
+## Commentaires et compteur de vues (facultatif)
 
-The design takes inspiration from [astro-theme-pure](https://github.com/cworld1/astro-theme-pure) (Apache-2.0), while the theme itself is an independent implementation. The Shiki code-block pipeline in `src/plugins/shiki-custom-transformers.ts`, `src/plugins/shiki-official` and `public/icons/code.svg` is ported from that project under Apache-2.0. This repository is released under the [MIT License](./LICENSE).
+Les commentaires sous les articles et le compteur de vues utilisent [Waline](https://waline.js.org). Ils sont **désactivés tant que l’adresse du serveur est vide** :
+
+- `comment.server` : commentaires sous les articles de blog
+- `pageview.server` : nombre de vues affiché sur chaque article et chaque projet, et compteur global dans le pied de page si `pageview.siteWide` vaut `true`
+
+Indiquez l’adresse de votre propre instance Waline (par exemple `https://waline.example.com/`) pour les activer.
+
+## Déploiement
+
+`pnpm build` produit un dossier `dist` statique, publiable sur GitHub Pages, Vercel, Netlify, Cloudflare Pages, etc.
+
+L’adresse du site et le sous-chemin sont lus dans les variables d’environnement `SITE_URL` et `BASE_PATH` (voir [astro.config.ts](./astro.config.ts)) :
+
+- `SITE_URL` : l’origine de production (ex. `https://mon-domaine.fr`), utilisée pour le sitemap, les URL canoniques, Open Graph et le RSS.
+- `BASE_PATH` : uniquement si le site vit dans un sous-dossier (ex. `/mon-portfolio/`).
+
+Pour GitHub Pages, le workflow fourni [.github/workflows/deploy.yml](./.github/workflows/deploy.yml) définit ces deux variables automatiquement à chaque push sur `main`, que le site soit un site de projet (`<user>.github.io/<repo>/`), un site utilisateur (`<user>.github.io`) ou sur un domaine personnalisé (activez Pages avec la source « GitHub Actions » dans les réglages du dépôt). Le workflow [build.yml](./.github/workflows/build.yml) vérifie que le site se construit sur chaque push et pull request.
+
+## Crédits et licence
+
+Basé sur le thème [astro-theme-ink](https://github.com/willimt/astro-theme-ink) de willimt, publié sous licence MIT. Le pipeline de blocs de code Shiki (`src/plugins/shiki-custom-transformers.ts`, `src/plugins/shiki-official`, `public/icons/code.svg`) provient de [astro-theme-pure](https://github.com/cworld1/astro-theme-pure) (Apache-2.0). Ce dépôt est distribué sous [licence MIT](./LICENSE).

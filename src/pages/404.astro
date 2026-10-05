@@ -1,15 +1,48 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro'
-import { withBase } from '@/utils'
+import { DEFAULT_LOCALE, LOCALES, localePath, useTranslations } from '@/i18n'
+
+// The 404 page has no language of its own: show every language, default first.
+const versions = LOCALES.map((lang) => {
+  const { t } = useTranslations(lang)
+  return {
+    lang,
+    title: t('notFound.title'),
+    text: t('notFound.text'),
+    back: t('notFound.back'),
+    home: localePath(lang)
+  }
+})
+const title = versions.map((version) => version.title).join(' / ')
 ---
 
-<BaseLayout title="Page not found" noindex>
+<BaseLayout lang={DEFAULT_LOCALE} title={title} noindex alternates={{}}>
   <div class="animate not-prose flex flex-col items-center gap-6 py-20 text-center">
     <p class="font-serif text-7xl font-semibold text-accent">404</p>
-    <p class="text-ink-soft">There is nothing you are looking for on this page of paper.</p>
-    <a href={withBase('/')} class="chip !px-4 !py-1.5 text-sm" data-astro-prefetch>
-      <span class="i-lucide-house size-4" aria-hidden="true"></span>
-      Back to home
-    </a>
+    <div class="flex flex-col gap-1">
+      {
+        versions.map((version) => (
+          <p lang={version.lang} class="text-ink-soft">
+            {version.text}
+          </p>
+        ))
+      }
+    </div>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      {
+        versions.map((version) => (
+          <a
+            href={version.home}
+            lang={version.lang}
+            hreflang={version.lang}
+            class="chip !px-4 !py-1.5 text-sm"
+            data-astro-prefetch
+          >
+            <span class="i-lucide-house size-4" aria-hidden="true" />
+            {version.back}
+          </a>
+        ))
+      }
+    </div>
   </div>
 </BaseLayout>

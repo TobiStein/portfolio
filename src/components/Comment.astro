@@ -1,9 +1,18 @@
 ---
+import { LOCALE_META, useTranslations, type Locale } from '@/i18n'
 import { config } from '@/site-config'
+import { withBase } from '@/utils'
 
 // Waline stylesheet + our overrides live together in waline.css (import
 // order guarantees our rules win) — see src/assets/styles/waline.css
 import walineStylesheet from '@/assets/styles/waline.css?url'
+
+interface Props {
+  lang: Locale
+}
+
+const { lang } = Astro.props
+const { t } = useTranslations(lang)
 
 const server = config.comment.server
 const enabled = config.comment.provider === 'waline' && server !== ''
@@ -11,51 +20,58 @@ const enabled = config.comment.provider === 'waline' && server !== ''
 
 {
   enabled && (
-    <section class="not-prose mt-14" aria-label="Comments">
+    <section class="not-prose mt-14" aria-label={t('comments.title')}>
       <link rel="stylesheet" href={walineStylesheet} />
       <h2 class="mb-4 flex items-center gap-2 font-serif text-lg font-semibold">
         <span class="i-lucide-message-square size-4 text-accent" aria-hidden="true" />
-        Comments
+        {t('comments.title')}
       </h2>
-      <div id="waline" />
+      <div
+        id="waline"
+        data-server={server}
+        data-lang={LOCALE_META[lang].intl}
+        data-reaction={withBase('/icons/heart-item.svg')}
+        data-reaction-label={t('comments.reaction')}
+        data-reaction-title={t('comments.reactionTitle')}
+        data-placeholder={t('comments.placeholder')}
+      />
     </section>
   )
 }
 
 <script>
-  import { config } from '@/site-config'
-  import { withBase } from '@/utils'
-
-  const server = config.comment.server
   const target = document.getElementById('waline')
 
   // Lazy-load Waline: initialize only when the comment section approaches the
   // viewport — saves ~190 KB of JS on the first paint of every post page.
-  const initComment = async () => {
+  const initComment = async (el: HTMLElement) => {
     const { init } = await import('@waline/client')
+    const { server = '', lang, reaction = '', reactionLabel, reactionTitle, placeholder } =
+      el.dataset
     init({
-      el: '#waline',
+      el,
       serverURL: server,
-      lang: 'zh-CN',
+      // Waline's built-in strings in the page language ('fr-FR' / 'en-US')
+      lang,
       // page views are handled by the separate <Pageview /> component
       pageview: false,
       imageUploader: false,
       // Single heart "like" reaction — styling lives in waline.css
-      reaction: [withBase('/icons/heart-item.svg')],
+      reaction: [reaction],
       locale: {
-        reaction0: 'Like(s)',
-        reactionTitle: '这篇文章对你有帮助吗？',
-        placeholder: 'Welcome to comment. (Email to receive replies. Login is unnecessary)'
+        ...(reactionLabel ? { reaction0: reactionLabel } : {}),
+        ...(reactionTitle ? { reactionTitle } : {}),
+        ...(placeholder ? { placeholder } : {})
       }
     })
   }
 
-  if (server && target) {
+  if (target?.dataset.server) {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
           observer.disconnect()
-          initComment()
+          initComment(target)
         }
       },
       { rootMargin: '600px 0px' }

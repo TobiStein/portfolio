@@ -1,6 +1,7 @@
 // Ported from astro-theme-pure (Apache-2.0): build-time Shiki transformers
-// that give code blocks titles, language labels, copy buttons and collapse —
-// the exact look of ink.willimt.com. The box styling lives in global.css.
+// that give code blocks titles, language labels, copy buttons and collapse.
+// The box styling lives in global.css; button labels are localized at runtime
+// (aria-labels: BaseLayout, visible labels: global.css).
 import { h } from 'hastscript'
 import type { ShikiTransformer } from 'shiki'
 

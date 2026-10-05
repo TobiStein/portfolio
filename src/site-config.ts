@@ -1,137 +1,130 @@
 /**
- * astro-theme-ink · site configuration
- * Everything the theme needs in one typed object — no virtual modules,
- * just import { config } from '@/site-config' where needed.
+ * Site configuration — everything personal lives here.
+ * Texts shown to visitors are written once per language: `{ fr: '…', en: '…' }`.
+ * Fields left empty (`''`) are simply hidden on the site; fill them in when ready.
  */
+import type { Localized } from '@/i18n'
 
 export interface NavItem {
-  title: string
+  title: Localized
+  /** Path without the language prefix, e.g. `/blog` (the prefix is added automatically) */
   link: string
 }
 
-export interface FriendLink {
-  name: string
-  desc: string
-  url: string
-  /** Absolute URL of the avatar image. Optional. */
-  avatar?: string
-}
-
 export interface EducationItem {
+  /** School or university */
   school: string
-  /** e.g. "计算机技术" */
-  major?: string
-  /** e.g. "硕士" */
-  degree?: string
-  /** e.g. "August 2021 - July 2024" */
-  date: string
+  /** Field of study, e.g. `{ fr: 'Informatique', en: 'Computer science' }` */
+  major?: Localized
+  /** Degree, e.g. `{ fr: 'Master', en: "Master's degree" }` */
+  degree?: Localized
+  /** Period, e.g. `{ fr: 'sept. 2021 – juin 2024', en: 'Sep 2021 – Jun 2024' }` */
+  date: Localized
 }
 
 export interface SkillGroup {
-  title: string
-  items: string[]
+  title: Localized
+  /** A plain string when it is the same in both languages ('Git'), otherwise `{ fr, en }` */
+  items: (string | Localized)[]
 }
 
-export interface HomeHeroConfig {
-  /** Tagline chip above the name, e.g. "Developer / Designer / Photographer" */
-  tagline?: string
-  /** Location label, e.g. "China / QingDao" */
-  location?: string
-  /** About paragraph under the name */
-  about: string
-  /** Short homepage introduction; falls back to the first paragraph of about. */
-  summary?: string
-  /** Action buttons */
-  buttons?: { title: string; link: string }[]
-}
-
-/** Home page content — edit this file and sections appear/disappear automatically. */
-export interface HomeConfig {
-  hero: HomeHeroConfig
-  /** How many recent posts to show; capped at 5 (0 hides the section). */
-  recentPosts: number
-  /** Education timeline; renders when non-empty */
-  education?: EducationItem[]
-  /** Skill groups; renders when non-empty */
-  skills?: SkillGroup[]
-  /** Show the tag cloud on the home page */
-  showTags: boolean
-  /** Show friend links on the home page */
-  showFriends: boolean
+export interface SocialLink {
+  label: string
+  /** Full URL (`https://…`, or `mailto:you@example.com` for e-mail). Empty = hidden. */
+  url: string
 }
 
 export interface Config {
   /** Site identity */
   site: {
+    /** Shown in the header and the browser tab */
     title: string
-    /** Shown on the home page hero and in the footer copyright */
+    /** Your name: home page hero, footer copyright, article metadata */
     author: string
-    description: string
-    lang: string
+    /** Meta description (search engines, link previews) */
+    description: Localized
     favicon: string
-    /** Avatar image shown on the home page hero; a path under `public/` */
+    /** Avatar shown on the home page; a path under `public/` */
     avatar: string
-    /** Open-graph image path under `public/` */
+    /** Open Graph image (link previews); a path under `public/` */
     ogImage: string
-    /** Founding year of the blog — used by the console easter egg */
-    since: number
-    /** Default color palette for first-time visitors: 'ink' (warm) | 'fresh' (mint) */
+    /** Default color palette for first-time visitors: 'ink' | 'fresh' */
     palette: 'ink' | 'fresh'
     /** Default theme for first-time visitors: 'light' | 'dark' | 'system' (follow OS) */
     theme: 'light' | 'dark' | 'system'
-    /** e.g. " · " */
+    /** Separator between page title and site title, e.g. " · " */
     titleDelimiter: string
   }
   header: {
     menu: NavItem[]
   }
-  /** Article page views — Waline server URL; leave empty to disable.
-   *  Waline 3 counts via POST `/article` (v2 counted on GET); the theme
-   *  handles both. The same server also powers the site-wide counter below. */
+  /** Page views — Waline server URL; leave empty to disable.
+   *  The same server also powers the site-wide counter in the footer. */
   pageview: {
     server: string
-    /** Site-wide total-visits counter in the footer (shares the same server) */
+    /** Site-wide total-visits counter in the footer */
     siteWide: boolean
   }
   footer: {
-    /** Show a quote selected at build time; omitted or false keeps the footer quiet. */
-    showQuote?: boolean
-    /** Shown as `© <year> <author>`; set a custom string to override entirely */
+    /** Overrides the default `© <year> <author>` line */
     copyright?: string
-    /** Extra plain-text links rendered next to the copyright */
-    links?: { title: string; url: string }[]
-    social?: Record<string, { label: string; url: string }>
+    /** Show a link to the RSS feed of the current language */
+    rss: boolean
+    /** Extra links next to the copyright: external URLs or files under `public/` */
+    links?: { title: Localized; url: string }[]
+    /** Keys pick the icon: github, gitlab, linkedin, mail, x, instagram, rss, website */
+    social?: Record<string, SocialLink>
   }
   blog: {
     pageSize: number
   }
-  /** Home page content (config-driven sections) */
-  home: HomeConfig
-  /** Lightweight client-side search (no external indexer) */
-  search: {
-    enabled: boolean
+  projects: {
+    pageSize: number
+  }
+  home: {
+    hero: {
+      /** Short line under your name, e.g. "Développeur web / Designer" */
+      tagline?: Localized
+      /** Location label, e.g. "Paris, France" */
+      location?: Localized
+      /** Short home page introduction; falls back to the first paragraph of `about.bio` */
+      summary?: Localized
+    }
+    /** How many recent projects to show (0 hides the section) */
+    recentProjects: number
+    /** How many recent posts to show (0 hides the section) */
+    recentPosts: number
+  }
+  /** "About me" page */
+  about: {
+    /** Biography; separate paragraphs with an empty line */
+    bio: Localized
+    /** Education timeline; hidden when empty */
+    education: EducationItem[]
+    /** Skill groups; hidden when empty */
+    skills: SkillGroup[]
   }
   /**
-   * Waline comment system. Leave `server` empty to disable.
+   * Waline comment system under blog posts. Leave `server` empty to disable.
    * See https://waline.js.org to deploy your own Waline instance.
    */
   comment: {
     provider: 'waline'
     server: string
   }
-  friends: FriendLink[]
 }
 
 export const config: Config = {
   site: {
-    title: "Hansen's ink",
-    author: 'Hansen W.',
-    description: "Hansen's ink — 记录技术、生活与思考。",
-    lang: 'en',
+    title: 'Tobi Stein',
+    author: 'Tobi Stein',
+    description: {
+      fr: 'Portfolio de Tobi Stein — projets, articles et parcours.',
+      en: 'Tobi Stein’s portfolio — projects, writing and background.'
+    },
     favicon: '/favicon/favicon.ico',
-    avatar: '/avatar.webp',
-    ogImage: '/og-card.svg',
-    since: 2020,
+    avatar: '/avatar2.png',
+    ogImage: '/og-card.png',
     palette: 'fresh',
     theme: 'system',
     titleDelimiter: ' · '
@@ -139,29 +132,27 @@ export const config: Config = {
 
   header: {
     menu: [
-      { title: 'Blog', link: '/blog' },
-      { title: 'Archives', link: '/archives' },
-      { title: 'Tags', link: '/tags' },
-      { title: 'Links', link: '/links' },
-      { title: 'About', link: '/about' }
+      { title: { fr: 'Projets', en: 'Projects' }, link: '/projects' },
+      { title: { fr: 'Blog', en: 'Blog' }, link: '/blog' },
+      { title: { fr: 'À propos', en: 'About me' }, link: '/about' }
     ]
   },
 
-  // Article page views + site-wide visit counter (your own Waline server)
+  // Your own Waline server URL, e.g. 'https://waline.example.com/'
   pageview: {
-    server: 'https://waline.willimt.com/',
+    server: '',
     siteWide: true
   },
 
   footer: {
-    showQuote: true,
-    copyright: `© 2020 - ${new Date().getFullYear()} Hansen W.`,
-    links: [
-      { title: 'RSS', url: '/rss.xml' },
-      { title: '鲁ICP备2022004230号-1', url: 'https://beian.miit.gov.cn/' }
-    ],
+    // Replaces the default « © <year> <author> » line, e.g. '© 2024 – 2026 Tobi Stein'
+    // copyright: '',
+    rss: true,
+    links: [],
     social: {
-      github: { label: 'GitHub', url: 'https://github.com/willimt' }
+      github: { label: 'GitHub', url: '' },
+      linkedin: { label: 'LinkedIn', url: '' },
+      mail: { label: 'E-mail', url: '' }
     }
   },
 
@@ -169,64 +160,51 @@ export const config: Config = {
     pageSize: 8
   },
 
-  // Home page content — edit this and the sections render automatically
-  home: {
-    hero: {
-      tagline: 'Developer / Designer / Photographer',
-      location: 'China / QingDao',
-      about:
-        '你好，我是 Hansen，业余时间喜欢折腾各种技术和工具，追求高效和极简的生活方式。\n\n目前就职于一家芯片设计公司，主要从事嵌入式 IDE 的开发和负责系统、工具的维护工作。\n\n平时喜欢玩游戏、听音乐、看电影、拍照。',
-      buttons: [{ title: 'More about me', link: '/about' }]
-    },
-    recentPosts: 5,
-    education: [],
-    skills: [
-      { title: 'Program', items: ['Python', 'Java', 'C', 'C++', 'SQL', 'Shell'] },
-      { title: 'Web', items: ['TypeScript', 'Vue.js', 'Node.js', 'JavaScript', 'HTML', 'CSS'] },
-      {
-        title: 'Tools',
-        items: [
-          'VS Code',
-          'Vim',
-          'Emacs',
-          'Git',
-          'Docker',
-          'Linux',
-          'Kafka',
-          'Redis',
-          'Nginx',
-          'CMake'
-        ]
-      },
-      { title: 'Text', items: ['Markdown', 'LaTeX'] }
-    ],
-    showTags: false,
-    showFriends: false
+  projects: {
+    pageSize: 8
   },
 
-  search: {
-    enabled: true
+  home: {
+    hero: {
+      tagline: {
+        fr: 'Développeur / Créateur / Curieux',
+        en: 'Developer / Maker / Curious mind'
+      },
+      location: { fr: 'France', en: 'France' }
+    },
+    recentProjects: 2,
+    recentPosts: 3
+  },
+
+  about: {
+    bio: {
+      fr: 'Bonjour, je suis Tobi Stein. Ce paragraphe est un texte de démonstration : remplacez-le par quelques lignes sur votre parcours et ce qui vous motive.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      en: 'Hi, I’m Tobi Stein. This paragraph is placeholder text: replace it with a few lines about your background and what drives you.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+    },
+    // Example:
+    // { school: 'Université …', major: { fr: 'Informatique', en: 'Computer science' },
+    //   degree: { fr: 'Master', en: "Master's degree" }, date: { fr: '2021 – 2024', en: '2021 – 2024' } }
+    education: [],
+    skills: [
+      {
+        title: { fr: 'Langages', en: 'Languages' },
+        items: [
+          { fr: 'Langage A', en: 'Language A' },
+          { fr: 'Langage B', en: 'Language B' }
+        ]
+      },
+      {
+        title: { fr: 'Outils', en: 'Tools' },
+        items: [
+          { fr: 'Outil A', en: 'Tool A' },
+          { fr: 'Outil B', en: 'Tool B' }
+        ]
+      }
+    ]
   },
 
   comment: {
     provider: 'waline',
-    // Fill in your Waline server URL to enable comments, e.g. deployed on
-    // Vercel + LeanCloud: https://your-waline.vercel.app/
     server: ''
-  },
-
-  friends: [
-    {
-      name: 'Astro',
-      desc: 'The web framework for content-driven websites.',
-      url: 'https://astro.build',
-      avatar: 'https://astro.build/favicon.svg'
-    },
-    {
-      name: 'UnoCSS',
-      desc: 'The instant atomic CSS engine.',
-      url: 'https://unocss.dev',
-      avatar: 'https://unocss.dev/favicon.svg'
-    }
-  ]
+  }
 }

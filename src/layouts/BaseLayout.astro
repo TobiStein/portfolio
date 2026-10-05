@@ -4,16 +4,28 @@ import '@/assets/styles/tokens.css'
 import '@/assets/styles/global.css'
 
 import BackToTop from '@/components/BackToTop.astro'
-import ConsoleGreeting from '@/components/ConsoleGreeting.astro'
 import Footer from '@/components/Footer.astro'
 import Header from '@/components/Header.astro'
 import Lightbox from '@/components/Lightbox.astro'
+import {
+  DEFAULT_LOCALE,
+  LOCALE_META,
+  LOCALES,
+  localePath,
+  otherLocale,
+  pick,
+  switchLocalePath,
+  useTranslations,
+  type Locale
+} from '@/i18n'
 import { config } from '@/site-config'
 import themeScript from '@/scripts/theme.js?raw'
 import { withBase } from '@/utils'
 import { THEME_COLORS, themeColorHex } from '@/utils/theme'
 
 interface Props {
+  /** Language of the page */
+  lang: Locale
   title?: string
   description?: string
   /** ISO date of the page (for article meta) */
@@ -24,28 +36,67 @@ interface Props {
   ogImage?: string
   /** Disable page indexation */
   noindex?: boolean
+  /**
+   * Base-aware URLs of the real translations of this page, e.g. from `localePath` / `entryUrl`.
+   * Used for `hreflang` links and the language toggle. Defaults to the same path in every
+   * language (pages that exist in all languages).
+   */
+  alternates?: Partial<Record<Locale, string>>
+  /** Language-neutral path (e.g. `/blog`) the language toggle falls back to when
+   *  this page has no translation in the other language. */
+  fallbackPath?: string
 }
 
 const {
+  lang,
   title,
-  description = config.site.description,
+  description = pick(config.site.description, lang),
   date,
   modifiedDate,
   stylesheets = [],
   ogImage = config.site.ogImage,
-  noindex = false
+  noindex = false,
+  alternates = Object.fromEntries(
+    LOCALES.map((locale) => [locale, switchLocalePath(Astro.url.pathname, locale)])
+  ) as Partial<Record<Locale, string>>,
+  fallbackPath = '/'
 } = Astro.props
+
+const { t } = useTranslations(lang)
+const siteUrl = Astro.site ?? 'https://example.com'
 
 const fullTitle = title
   ? `${title}${config.site.titleDelimiter}${config.site.title}`
   : config.site.title
-const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://example.com')
-const ogUrl = new URL(withBase(ogImage), Astro.site ?? 'https://example.com')
+const canonical = new URL(Astro.url.pathname, siteUrl)
+const ogUrl = new URL(withBase(ogImage), siteUrl)
+
+// hreflang links: every real translation of this page (the page itself included)
+const translations: Partial<Record<Locale, string>> = {
+  ...alternates,
+  [lang]: alternates[lang] ?? Astro.url.pathname
+}
+const hreflangLinks = noindex
+  ? []
+  : LOCALES.flatMap((locale) => {
+      const href = translations[locale]
+      return href ? [{ hreflang: locale, href: new URL(href, siteUrl).href }] : []
+    })
+const defaultAlternate = noindex ? undefined : translations[DEFAULT_LOCALE]
+const ogAlternateLocales = LOCALES.filter((locale) => locale !== lang && translations[locale])
+
+// Language toggle: the translation when it exists, otherwise a neutral page
+const target = otherLocale(lang)
+const switchHref = alternates[target] ?? localePath(target, fallbackPath)
+
+// Code-block button labels are added in English at build time by the Shiki
+// transformers; they are localized on load (visible labels: see global.css).
+const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
 ---
 
 <!doctype html>
 <html
-  lang={config.site.lang}
+  lang={lang}
   class="scroll-smooth"
   data-bg-ink-light={THEME_COLORS.ink.light}
   data-bg-ink-dark={THEME_COLORS.ink.dark}
@@ -66,6 +117,18 @@ const ogUrl = new URL(withBase(ogImage), Astro.site ?? 'https://example.com')
     <link rel="apple-touch-icon" sizes="180x180" href={withBase('/favicon/apple-touch-icon.png')} />
     <link rel="manifest" href={withBase('/favicon/site.webmanifest')} />
     <link rel="canonical" href={canonical} />
+    {hreflangLinks.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
+    {
+      defaultAlternate && (
+        <link rel="alternate" hreflang="x-default" href={new URL(defaultAlternate, siteUrl).href} />
+      )
+    }
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={config.site.title}
+      href={localePath(lang, '/rss.xml')}
+    />
     <meta name="theme-color" content={themeColorHex(config.site.palette, false)} />
     {stylesheets.map((href) => <link rel="stylesheet" href={href} />)}
 
@@ -78,6 +141,12 @@ const ogUrl = new URL(withBase(ogImage), Astro.site ?? 'https://example.com')
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogUrl} />
     <meta property="og:site_name" content={config.site.title} />
+    <meta property="og:locale" content={LOCALE_META[lang].og} />
+    {
+      ogAlternateLocales.map((locale) => (
+        <meta property="og:locale:alternate" content={LOCALE_META[locale].og} />
+      ))
+    }
     <meta name="twitter:card" content="summary_large_image" />
 
     {date && <meta property="article:published_time" content={date.toISOString()} />}
@@ -100,20 +169,28 @@ const ogUrl = new URL(withBase(ogImage), Astro.site ?? 'https://example.com')
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:border-accent focus:bg-card focus:px-3 focus:py-2"
     >
-      Skip to content
+      {t('a11y.skip')}
     </a>
 
     <div class="flex min-h-dvh flex-col">
-      <Header />
+      <Header lang={lang} switchHref={switchHref} />
       <div class="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 sm:px-8">
         <main id="main" class="flex-1 py-10">
           <slot />
         </main>
-        <Footer />
+        <Footer lang={lang} />
       </div>
     </div>
-    <BackToTop />
-    <Lightbox />
-    <ConsoleGreeting />
+    <BackToTop lang={lang} />
+    <Lightbox lang={lang} />
+
+    <script is:inline define:vars={{ codeLabels }}>
+      document
+        .querySelectorAll('.astro-code button.copy')
+        .forEach((button) => button.setAttribute('aria-label', codeLabels.copy))
+      document
+        .querySelectorAll('.astro-code button.collapse-toggle')
+        .forEach((button) => button.setAttribute('aria-label', codeLabels.toggle))
+    </script>
   </body>
 </html>

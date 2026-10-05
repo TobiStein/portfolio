@@ -15,12 +15,12 @@ test('counters accept real zero and both supported response shapes', async () =>
     let calls = 0
     const count = await recordPageview(
       'https://counter.example///',
-      '/blog/中文',
+      '/fr/blog/été',
       async (url, init) => {
         calls++
         assert.equal(url, 'https://counter.example/article')
         assert.equal(init.method, 'POST')
-        assert.deepEqual(JSON.parse(init.body), { path: '/blog/中文', type: 'time', action: 'inc' })
+        assert.deepEqual(JSON.parse(init.body), { path: '/fr/blog/été', type: 'time', action: 'inc' })
         return response(payload)
       }
     )
@@ -61,12 +61,12 @@ test('GET-only fallback preserves the exact encoded counter path and checks its 
       const calls = []
       const value = await recordPageview(
         'https://counter.example/',
-        '/blog/中文?x=1&y=2',
+        '/fr/blog/été?x=1&y=2',
         async (url, init) => {
           calls.push(init.method)
           if (init.method === 'POST') return response({}, postStatus)
           const parsed = new URL(url)
-          assert.equal(parsed.searchParams.get('path'), '/blog/中文?x=1&y=2')
+          assert.equal(parsed.searchParams.get('path'), '/fr/blog/été?x=1&y=2')
           assert.equal(parsed.searchParams.get('type'), 'time')
           return response({ data: [{ time: 23 }] }, getStatus)
         }

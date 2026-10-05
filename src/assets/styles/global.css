@@ -88,12 +88,12 @@ html.theme-switching *::after {
 }
 
 /* ============================================================
-   Shiki code blocks — ported from astro-theme-pure, the exact look
-   of ink.willimt.com. The structure is built at build time by the
-   Shiki transformers: `div.astro-code > pre > code` with sticky line
-   numbers, optional title, language label, copy button, collapse,
-   and diff/highlight notations. Font sizing comes from the prose
-   typography preset, exactly like the original theme.
+   Shiki code blocks — ported from astro-theme-pure. The structure
+   is built at build time by the Shiki transformers:
+   `div.astro-code > pre > code` with sticky line numbers, optional
+   title, language label, copy button, collapse, and diff/highlight
+   notations. Font sizing comes from the prose typography preset,
+   exactly like the original theme.
    ============================================================ */
 
 .astro-code {
@@ -336,6 +336,18 @@ html.dark .astro-code pre span {
   }
 }
 
+/* Code-block labels in French (English above is the default).
+   The collapse button already ends with the word " code". */
+:lang(fr) .astro-code button.copy .success::before {
+  content: 'Copié\00a0!';
+}
+:lang(fr) .astro-code .collapse-toggle .desc::before {
+  content: 'Réduire le';
+}
+:lang(fr) .astro-code.collapsed .collapse-toggle .desc::before {
+  content: 'Afficher tout le';
+}
+
 /* ---- Misc ---- */
 hr {
   border-color: hsl(var(--line) / 1);
@@ -354,7 +366,7 @@ hr {
   margin-inline: auto;
 }
 
-/* Search highlight */
+/* Highlighted text (<mark>) */
 mark {
   background-color: hsl(var(--accent) / 0.18);
   color: inherit;

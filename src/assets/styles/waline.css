@@ -72,6 +72,9 @@
   clear: both;
   border: 0;
 }
+:lang(fr) #waline .wl-reaction-votes:after {
+  content: 'J’aime';
+}
 #waline .wl-reaction img {
   filter: invert(25%);
 }

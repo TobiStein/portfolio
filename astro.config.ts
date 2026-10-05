@@ -29,12 +29,15 @@ import rehypeContentFeatures from './src/plugins/rehype-content-features.ts'
 // Sub-path base, used when deployed under a project Pages URL
 // (e.g. /astro-theme-ink/). Empty locally & for user/project root deploys.
 const base = process.env.BASE_PATH || ''
+const site = process.env.SITE_URL || 'https://example.com'
+// The site root only redirects to /fr/ or /en/ — keep it out of the sitemap.
+const rootUrl = new URL(base ? `${base.replace(/\/?$/, '/')}` : '/', site).href
 
 // https://astro.build/config
 export default defineConfig({
   // Real site URL — also injected by the GitHub Pages deploy workflow.
   // Needed for sitemap & canonical links.
-  site: process.env.SITE_URL || 'https://example.com',
+  site,
 
   // Sub-path base (empty locally & for root deploys).
   base: base || undefined,
@@ -85,5 +88,12 @@ export default defineConfig({
     }
   },
 
-  integrations: [unocss(), sitemap()]
+  integrations: [
+    unocss(),
+    sitemap({
+      filter: (page) => page !== rootUrl,
+      // hreflang links between the French and English versions of each page
+      i18n: { defaultLocale: 'fr', locales: { fr: 'fr', en: 'en' } }
+    })
+  ]
 })

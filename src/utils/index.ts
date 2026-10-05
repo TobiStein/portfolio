@@ -3,10 +3,21 @@
 export const SOCIAL_ICONS: Record<string, string> = {
   github: 'i-lucide-github',
   gitlab: 'i-lucide-gitlab',
-  rss: 'i-lucide-rss',
+  linkedin: 'i-lucide-linkedin',
   mail: 'i-lucide-mail',
   x: 'i-lucide-twitter',
-  weibo: 'i-lucide-globe'
+  instagram: 'i-lucide-instagram',
+  rss: 'i-lucide-rss',
+  website: 'i-lucide-globe'
+}
+
+/** Social links that have a URL, with their icon class (empty URLs are hidden). */
+export function socialLinks(
+  social: Record<string, { label: string; url: string }> = {}
+): { label: string; url: string; icon: string }[] {
+  return Object.entries(social)
+    .filter(([, item]) => item.url.trim() !== '')
+    .map(([key, item]) => ({ ...item, icon: SOCIAL_ICONS[key] ?? 'i-lucide-link' }))
 }
 
 /** Join class names, skipping falsy values. */
@@ -20,19 +31,20 @@ export function cn(...classes: Array<string | false | null | undefined>): string
  *  (`https://…`) and relative / hash paths pass through untouched. */
 export function withBase(path: string): string {
   if (!path.startsWith('/')) return path
-  const base = import.meta.env.BASE_URL
+  const base = import.meta.env?.BASE_URL ?? '/'
   if (base === '/' || base === '') return path
   const normalized = base.endsWith('/') ? base : `${base}/`
   return `${normalized}${path.replace(/^\//, '')}`
 }
 
-/** Format a date using the site locale, e.g. "August 16, 2026". */
+/** Format a date for a locale, e.g. "16 août 2026" (fr-FR) / "August 16, 2026" (en-US). */
 export function formatDate(
   date: Date,
-  locale = 'en-US',
+  locale = 'fr-FR',
   options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
 ): string {
-  return new Intl.DateTimeFormat(locale, options).format(date)
+  // Frontmatter dates are parsed as UTC midnight: format in UTC so the day never shifts
+  return new Intl.DateTimeFormat(locale, { timeZone: 'UTC', ...options }).format(date)
 }
 
 /** Rough reading time in minutes based on CJK-aware word counting. */

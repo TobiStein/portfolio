@@ -1,0 +1,126 @@
+---
+import type { GetStaticPaths } from 'astro'
+
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { localeStaticPaths, useTranslations, type Locale } from '@/i18n'
+import { config } from '@/site-config'
+import { socialLinks } from '@/utils'
+
+export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths
+
+interface Props {
+  lang: Locale
+}
+
+const { lang } = Astro.props
+const { t, pick } = useTranslations(lang)
+const { education, skills } = config.about
+
+const description = pick(config.site.description)
+const bio = pick(config.about.bio)
+  .split(/\n\s*\n/)
+  .map((paragraph) => paragraph.trim())
+  .filter(Boolean)
+const contacts = socialLinks(config.footer.social)
+---
+
+<BaseLayout lang={lang} title={t('about.title')} description={description}>
+  <div class="animate mx-auto max-w-3xl">
+    <header class="not-prose mb-8 text-center">
+      <h1 class="font-serif text-3xl font-semibold">{t('about.title')}</h1>
+      {description && <p class="mt-3 text-ink-soft">{description}</p>}
+    </header>
+
+    <!-- Headings stay direct children of .prose so the typography margins apply -->
+    <div class="prose prose-fill">
+      {
+        bio.length > 0 && (
+          <>
+            <h2>{t('about.me')}</h2>
+            {bio.map((paragraph) => (
+              <p>{paragraph}</p>
+            ))}
+          </>
+        )
+      }
+
+      <!-- Education -->
+      {
+        education.length > 0 && (
+          <>
+            <h2>{t('about.education')}</h2>
+            <div class="not-prose paper-card divide-y divide-line overflow-hidden">
+              {education.map((item) => (
+                <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between">
+                  <div>
+                    <p class="font-serif font-semibold leading-snug">{item.school}</p>
+                    {(item.major || item.degree) && (
+                      <p class="mt-0.5 text-sm text-ink-soft">
+                        {[item.major, item.degree]
+                          .map((value) => (value ? pick(value) : ''))
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                  <p class="shrink-0 font-mono text-xs text-ink-soft sm:ms-6">{pick(item.date)}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )
+      }
+
+      <!-- Skills -->
+      {
+        skills.length > 0 && (
+          <>
+            <h2>{t('about.skills')}</h2>
+            <div class="not-prose flex flex-col gap-5">
+              {skills.map((group) => (
+                <div>
+                  <h3 class="mb-2 text-sm font-semibold uppercase tracking-widest text-ink-soft">
+                    {pick(group.title)}
+                  </h3>
+                  <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-soft">
+                    {group.items.map((item) => (
+                      <span>{typeof item === 'string' ? item : pick(item)}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )
+      }
+
+      <!-- Contact -->
+      {
+        contacts.length > 0 && (
+          <>
+            <h2>{t('about.contact')}</h2>
+            <p>{t('about.contactText')}</p>
+            <ul class="not-prose flex flex-wrap items-center gap-3">
+              {contacts.map((item) => {
+                const external = !item.url.startsWith('mailto:')
+                return (
+                  <li>
+                    <a
+                      href={item.url}
+                      target={external ? '_blank' : undefined}
+                      rel={external ? 'noreferrer' : undefined}
+                      class="chip !px-3 !py-1 text-sm"
+                    >
+                      <span class={`${item.icon} size-4`} aria-hidden="true" />
+                      {item.label}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </>
+        )
+      }
+    </div>
+  </div>
+</BaseLayout>

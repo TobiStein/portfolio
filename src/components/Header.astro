@@ -1,20 +1,42 @@
 ---
+import {
+  LOCALE_META,
+  LOCALE_STORAGE_KEY,
+  localePath,
+  otherLocale,
+  useTranslations,
+  type Locale
+} from '@/i18n'
 import { config } from '@/site-config'
-import { withBase } from '@/utils'
 
-const pathname = Astro.url.pathname
-
-function isActive(link: string): boolean {
-  const href = withBase(link)
-  if (href === withBase('/')) return pathname === href
-  return pathname === href || pathname.startsWith(`${href}/`)
+interface Props {
+  lang: Locale
+  /** URL of this page in the other language (or a neutral fallback page) */
+  switchHref: string
 }
+
+const { lang, switchHref } = Astro.props
+const { t, pick } = useTranslations(lang)
+const target = otherLocale(lang)
+// Written in the target language, like the page it leads to
+const switchLabel = useTranslations(target).t('lang.switchTo')
+
+const trim = (path: string) => path.replace(/\/+$/, '')
+const pathname = trim(Astro.url.pathname)
+const menu = config.header.menu.map((item) => {
+  const href = localePath(lang, item.link)
+  const exact = pathname === trim(href)
+  const inSection = item.link !== '/' && pathname.startsWith(`${trim(href)}/`)
+  // 'page' on the section page itself, 'true' on the pages inside it (an article, page 2…)
+  const current: 'page' | 'true' | undefined = exact ? 'page' : inSection ? 'true' : undefined
+  return { title: pick(item.title), href, current }
+})
 ---
 
 <header class="site-header not-prose sticky top-0 z-40 w-full shrink-0" id="site-header">
   <div class="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-5 sm:px-8">
     <!-- Brand -->
-    <a href={withBase('/')} class="group flex items-center gap-2" aria-label={config.site.title}>
+    <a href={localePath(lang)} class="group flex items-center gap-2" aria-label={config.site.title}>
       <span
         class="i-lucide-feather text-lg text-accent transition-transform duration-300 group-hover:-rotate-12"
         aria-hidden="true"></span>
@@ -22,15 +44,15 @@ function isActive(link: string): boolean {
     </a>
 
     <!-- Nav -->
-    <nav class="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
+    <nav class="hidden items-center gap-1 md:flex" aria-label={t('nav.primary')}>
       {
-        config.header.menu.map((item) => (
+        menu.map((item) => (
           <a
-            href={withBase(item.link)}
-            aria-current={isActive(item.link) ? 'page' : undefined}
+            href={item.href}
+            aria-current={item.current}
             class={[
               'rounded-md px-3 py-1.5 text-sm transition-colors duration-200',
-              isActive(item.link) ? 'text-accent' : 'text-ink-soft hover:text-accent'
+              item.current ? 'text-accent' : 'text-ink-soft hover:text-accent'
             ].join(' ')}
           >
             {item.title}
@@ -41,26 +63,27 @@ function isActive(link: string): boolean {
 
     <!-- Actions -->
     <div class="flex items-center gap-1">
-      {
-        config.search.enabled && (
-          <a
-            href={withBase('/search')}
-            title="Search"
-            aria-label="Search"
-            class="icon-btn"
-            data-astro-prefetch
-          >
-            <span class="i-lucide-search size-5" aria-hidden="true" />
-          </a>
-        )
-      }
+      <a
+        id="lang-toggle"
+        href={switchHref}
+        hreflang={target}
+        lang={target}
+        data-lang={target}
+        data-storage-key={LOCALE_STORAGE_KEY}
+        class="icon-btn lang-btn"
+        title={switchLabel}
+      >
+        <span class="i-lucide-languages size-4" aria-hidden="true"></span>
+        <span>{LOCALE_META[target].label}</span>
+        <span class="sr-only"> – {switchLabel}</span>
+      </a>
 
       <button
         id="palette-toggle"
         type="button"
         class="icon-btn"
-        aria-label="Switch palette (ink / fresh)"
-        title="Switch palette"
+        aria-label={t('header.palette')}
+        title={t('header.palette')}
       >
         <span class="i-lucide-feather icon-ink size-5" aria-hidden="true"></span>
         <span class="i-lucide-leaf icon-fresh hidden size-5" aria-hidden="true"></span>
@@ -70,8 +93,8 @@ function isActive(link: string): boolean {
         id="theme-toggle"
         type="button"
         class="icon-btn"
-        aria-label="Toggle theme"
-        title="Toggle theme"
+        aria-label={t('header.theme')}
+        title={t('header.theme')}
       >
         <span class="i-lucide-monitor icon-system size-5" aria-hidden="true"></span>
         <span class="i-lucide-sun icon-light size-5" aria-hidden="true"></span>
@@ -84,16 +107,16 @@ function isActive(link: string): boolean {
 <!-- Mobile nav: in normal flow (scrolls away), only the slim bar stays sticky -->
 <nav
   class="mobile-nav not-prose mx-auto flex max-w-5xl gap-1 overflow-x-auto px-5 pb-2 sm:px-8 md:hidden"
-  aria-label="Primary navigation"
+  aria-label={t('nav.primary')}
 >
   {
-    config.header.menu.map((item) => (
+    menu.map((item) => (
       <a
-        href={withBase(item.link)}
-        aria-current={isActive(item.link) ? 'page' : undefined}
+        href={item.href}
+        aria-current={item.current}
         class={[
           'flex-none rounded-md px-3 py-1 text-sm transition-colors duration-200',
-          isActive(item.link) ? 'text-accent' : 'text-ink-soft hover:text-accent'
+          item.current ? 'text-accent' : 'text-ink-soft hover:text-accent'
         ].join(' ')}
       >
         {item.title}
@@ -138,6 +161,17 @@ function isActive(link: string): boolean {
     background-color: hsl(var(--wash) / 1);
   }
 
+  /* Language toggle: same look as the icon buttons, sized to its label */
+  .lang-btn {
+    width: auto;
+    gap: 0.3rem;
+    padding-inline: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
   /* Mobile nav row: scrollable, no visible scrollbar */
   .mobile-nav {
     scrollbar-width: none;
@@ -174,4 +208,18 @@ function isActive(link: string): boolean {
   const onScroll = () => header?.classList.toggle('scrolled', window.scrollY > 8)
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
+
+  // Remember the language picked with the toggle (read by the root redirect)
+  const langToggle = document.getElementById('lang-toggle')
+  if (langToggle) {
+    const { lang, storageKey } = langToggle.dataset
+    langToggle.addEventListener('click', () => {
+      if (!lang || !storageKey) return
+      try {
+        localStorage.setItem(storageKey, lang)
+      } catch {
+        // Switching still works when storage is unavailable.
+      }
+    })
+  }
 </script>

@@ -1,0 +1,54 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { render } from 'astro:content'
+
+import EntryLayout from '@/layouts/EntryLayout.astro'
+import { otherLocale, type Locale } from '@/i18n'
+import {
+  entryLocale,
+  entrySlug,
+  entryUrl,
+  getAllEntries,
+  getReadingTime,
+  getTranslationUrl,
+  type Entry
+} from '@/utils/server'
+
+export const prerender = true
+
+// Drafts are built too so they stay reachable by URL.
+// Folder projects (`fr/my-app/index.md`) get the folder as the slug.
+export const getStaticPaths = (async () => {
+  const entries = await getAllEntries('projects')
+  return entries.map((entry) => {
+    const lang = entryLocale(entry) as Locale
+    return { params: { lang, slug: entrySlug(entry) }, props: { entry, lang } }
+  })
+}) satisfies GetStaticPaths
+
+interface Props {
+  entry: Entry
+  lang: Locale
+}
+
+const { entry, lang } = Astro.props
+const { Content, headings, remarkPluginFrontmatter } = await render(entry)
+
+// Language toggle / hreflang: only link to a translation that really exists
+const other = otherLocale(lang)
+const translationUrl = await getTranslationUrl(entry, other)
+const alternates: Partial<Record<Locale, string>> = {}
+alternates[lang] = entryUrl(entry)
+if (translationUrl) alternates[other] = translationUrl
+---
+
+<EntryLayout
+  {entry}
+  {lang}
+  {headings}
+  minutesRead={getReadingTime(entry)}
+  hasMath={remarkPluginFrontmatter.hasMath === true}
+  {alternates}
+>
+  <Content />
+</EntryLayout>

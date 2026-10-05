@@ -1,0 +1,78 @@
+---
+import type { GetStaticPaths, Page } from 'astro'
+
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import EntryCard from '@/components/EntryCard.astro'
+import Pagination from '@/components/Pagination.astro'
+import { LOCALES, useTranslations, type Locale } from '@/i18n'
+import { config } from '@/site-config'
+import { getPosts, type Post } from '@/utils/server'
+
+export const prerender = true
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const pages = await Promise.all(
+    LOCALES.map(async (lang) =>
+      paginate(await getPosts(lang), {
+        pageSize: config.blog.pageSize,
+        params: { lang },
+        props: { lang }
+      })
+    )
+  )
+  return pages.flat()
+}) satisfies GetStaticPaths
+
+interface Props {
+  page: Page<Post>
+  lang: Locale
+}
+
+const { page, lang } = Astro.props
+const { t, tn } = useTranslations(lang)
+const isFirst = page.currentPage === 1
+const totalPages = Math.max(1, page.lastPage)
+const pageLabel = t('pagination.page', { page: page.currentPage, total: totalPages })
+const title = isFirst
+  ? t('blog.title')
+  : `${t('blog.title')}${config.site.titleDelimiter}${pageLabel}`
+
+// Page 1 exists in every language; later pages may not exist in the other one.
+const alternates: Partial<Record<Locale, string>> | undefined = isFirst
+  ? undefined
+  : { [lang]: Astro.url.pathname }
+---
+
+<BaseLayout
+  lang={lang}
+  title={title}
+  description={t('blog.description')}
+  alternates={alternates}
+  fallbackPath="/blog"
+>
+  <div class="animate not-prose mx-auto max-w-[47.5rem]">
+    <header class="mb-8">
+      <h1 class="font-serif text-3xl font-semibold">{t('blog.title')}</h1>
+      <p class="mt-2 text-sm text-ink-soft">
+        {tn('blog.count', page.total)} · {pageLabel}
+      </p>
+    </header>
+
+    {
+      page.data.length === 0 ? (
+        <p class="py-12 text-center text-ink-soft">{t('blog.empty')}</p>
+      ) : (
+        <div class="flex flex-col">
+          {page.data.map((post) => (
+            <EntryCard entry={post} lang={lang} />
+          ))}
+        </div>
+      )
+    }
+
+    <Pagination
+      prev={page.url.prev ? { title: t('pagination.previous'), url: page.url.prev } : undefined}
+      next={page.url.next ? { title: t('pagination.next'), url: page.url.next } : undefined}
+    />
+  </div>
+</BaseLayout>

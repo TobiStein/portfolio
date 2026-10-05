@@ -1,5 +1,13 @@
 ---
+import { LOCALE_META, useTranslations, type Locale } from '@/i18n'
 import { config } from '@/site-config'
+
+interface Props {
+  lang: Locale
+}
+
+const { lang } = Astro.props
+const { t } = useTranslations(lang)
 
 const server = config.pageview.server
 const path = Astro.url.pathname
@@ -7,12 +15,19 @@ const path = Astro.url.pathname
 
 {
   server && (
-    <span class="pv text-sm text-ink-soft" data-server={server} data-path={path}>
+    <span
+      class="pv text-sm text-ink-soft"
+      data-server={server}
+      data-path={path}
+      data-locale={LOCALE_META[lang].intl}
+      data-unavailable={t('pageview.unavailableShort')}
+      data-unavailable-title={t('pageview.unavailable')}
+    >
       <span class="i-lucide-eye inline-block size-3.5 align-[-2px]" aria-hidden="true" />
-      <span class="pv-num" data-pageview-value aria-label="views">
+      <span class="pv-num" data-pageview-value aria-label={t('pageview.views')}>
         ···
       </span>
-      <span class="pv-unit"> views</span>
+      <span class="pv-unit"> {t('pageview.views')}</span>
     </span>
   )
 }

@@ -1,15 +1,26 @@
 ---
-import { SOCIAL_ICONS, withBase } from '@/utils'
-import { config } from '@/site-config'
 import SitePageview from '@/components/SitePageview.astro'
-import FooterQuote from '@/components/FooterQuote.astro'
+import { localePath, useTranslations, type Locale } from '@/i18n'
+import { config } from '@/site-config'
+import { socialLinks, withBase } from '@/utils'
+
+interface Props {
+  lang: Locale
+}
+
+const { lang } = Astro.props
+const { t, pick } = useTranslations(lang)
 
 const year = new Date().getFullYear()
 const copyright = config.footer.copyright ?? `© ${year} ${config.site.author}`
-const footerLinks = config.footer.links ?? []
-const socialItems = Object.entries(config.footer.social ?? {}).map(([key, item]) => ({
+const footerLinks = (config.footer.links ?? []).map((link) => ({
+  title: pick(link.title),
+  // Files under public/ need the base; external URLs pass through
+  url: withBase(link.url)
+}))
+const socialItems = socialLinks(config.footer.social).map((item) => ({
   ...item,
-  icon: SOCIAL_ICONS[key] ?? 'i-lucide-link'
+  external: /^https?:\/\//.test(item.url)
 }))
 const footerLink =
   'inline-flex min-h-6 items-center underline-offset-4 transition-colors hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline'
@@ -19,18 +30,16 @@ const footerLink =
   class="not-prose border-t border-line/60 py-7 text-xs leading-relaxed text-ink-soft sm:py-8"
 >
   <div class="mx-auto max-w-[47.5rem]">
-    {config.footer.showQuote && <FooterQuote />}
-
     <div class="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
       <p>{copyright}</p>
       {
         socialItems.length > 0 && (
-          <nav aria-label="Social links" class="flex items-center gap-1">
+          <nav aria-label={t('footer.social')} class="flex items-center gap-1">
             {socialItems.map((item) => (
               <a
                 href={item.url}
-                target="_blank"
-                rel="noreferrer"
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noreferrer' : undefined}
                 aria-label={item.label}
                 title={item.label}
                 class="inline-flex size-8 items-center justify-center transition-colors hover:text-accent focus-visible:text-accent"
@@ -45,29 +54,35 @@ const footerLink =
 
     <div class="mt-2 flex flex-col items-center gap-2 sm:flex-row sm:justify-between sm:gap-4">
       {
-        footerLinks.length > 0 && (
+        (footerLinks.length > 0 || config.footer.rss) && (
           <nav
-            aria-label="Footer links"
+            aria-label={t('footer.links')}
             class="flex flex-wrap justify-center gap-x-4 gap-y-1 sm:justify-start"
           >
             {footerLinks.map((link) => (
-              <a href={withBase(link.url)} class={footerLink}>
+              <a href={link.url} class={footerLink}>
                 {link.title}
               </a>
             ))}
+            {config.footer.rss && (
+              <a href={localePath(lang, '/rss.xml')} class={`${footerLink} gap-1`}>
+                <span class="i-lucide-rss size-3.5" aria-hidden="true" />
+                RSS
+              </a>
+            )}
           </nav>
         )
       }
       <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:ms-auto">
         <span>
-          Powered by <a
+          {t('footer.poweredBy')} <a
             href="https://astro.build"
             target="_blank"
             rel="noreferrer"
             class={footerLink}>Astro</a
           >
         </span>
-        <SitePageview />
+        <SitePageview lang={lang} />
       </div>
     </div>
   </div>

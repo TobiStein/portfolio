@@ -1,10 +1,11 @@
-// One-off asset optimization: shrink the home-page avatar.
-// Replace public/avatar.png with your photo, then re-run `node scripts/optimize-avatar.mjs`.
+// One-off asset optimization: shrink the home-page avatar to a 256×256 WebP.
+// Usage: `pnpm optimize:avatar [path/to/photo]` (default: public/avatar2.png)
 import sharp from 'sharp'
 
-await sharp('public/avatar.png')
-  .resize(256, 256, { fit: 'cover' })
-  .webp({ quality: 82 })
-  .toFile('public/avatar.webp')
+const input = process.argv[2] ?? 'public/avatar2.png'
+const output = 'public/avatar.webp'
 
-console.log('public/avatar.webp written (256x256 webp)')
+await sharp(input).resize(256, 256, { fit: 'cover' }).webp({ quality: 82 }).toFile(output)
+
+console.log(`${output} written from ${input} (256x256 webp)`)
+console.log("Next: set site.avatar to '/avatar.webp' in src/site-config.ts")

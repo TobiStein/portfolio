@@ -1,3 +1,13 @@
+---
+import { useTranslations, type Locale } from '@/i18n'
+
+interface Props {
+  lang: Locale
+}
+
+const { t } = useTranslations(Astro.props.lang)
+---
+
 <style>
   #back-to-top {
     position: fixed;
@@ -39,7 +49,7 @@
   }
 </style>
 
-<button id="back-to-top" type="button" aria-label="Back to top" title="Back to top">
+<button id="back-to-top" type="button" aria-label={t('backToTop')} title={t('backToTop')}>
   <span class="i-lucide-arrow-up size-5" aria-hidden="true"></span>
 </button>
 

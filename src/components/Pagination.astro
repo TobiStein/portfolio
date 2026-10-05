@@ -1,4 +1,6 @@
 ---
+import { getLocaleFromPath, useTranslations } from '@/i18n'
+
 interface PageLink {
   title: string
   url: string
@@ -7,12 +9,15 @@ interface PageLink {
 interface Props {
   prev?: PageLink
   next?: PageLink
+  /** Accessible name of the navigation; defaults to "Pagination" in the page language */
+  label?: string
 }
 
-const { prev, next } = Astro.props
+const { t } = useTranslations(getLocaleFromPath(Astro.url.pathname))
+const { prev, next, label = t('pagination.label') } = Astro.props
 ---
 
-<nav class="mt-10 flex items-stretch justify-between gap-3" aria-label="Pagination">
+<nav class="mt-10 flex items-stretch justify-between gap-3" aria-label={label}>
   {
     prev ? (
       <a

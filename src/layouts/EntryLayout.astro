@@ -1,0 +1,252 @@
+---
+import katexStylesheet from 'katex/dist/katex.min.css?url'
+import { Image } from 'astro:assets'
+import type { MarkdownHeading } from 'astro'
+
+import BaseLayout from './BaseLayout.astro'
+import Comment from '@/components/Comment.astro'
+import Mermaid from '@/components/Mermaid.astro'
+import Pageview from '@/components/Pageview.astro'
+import ProjectLinks from '@/components/ProjectLinks.astro'
+import TOC from '@/components/TOC.astro'
+import { LOCALE_META, localePath, useTranslations, type Locale } from '@/i18n'
+import { config } from '@/site-config'
+import { entryUrl, getPosts, getProjects, type Entry } from '@/utils/server'
+
+interface Props {
+  /** A blog post or a project */
+  entry: Entry
+  lang: Locale
+  headings: MarkdownHeading[]
+  minutesRead: number
+  hasMath?: boolean
+  /** Base-aware URLs of this entry in every language it exists in */
+  alternates?: Partial<Record<Locale, string>>
+}
+
+const { entry, lang, headings, minutesRead, hasMath = false, alternates } = Astro.props
+const { t, date } = useTranslations(lang)
+const { data } = entry
+const published = data.publishDate
+const updated = data.updatedDate
+
+const isProject = entry.collection === 'projects'
+const section = `/${entry.collection}`
+const repo = entry.collection === 'projects' ? entry.data.repo : undefined
+const demo = entry.collection === 'projects' ? entry.data.demo : undefined
+// Comments are for blog posts only
+const showComments = entry.collection === 'blog' && entry.data.comment
+
+const text = isProject
+  ? { back: t('projects.back'), end: t('projects.end'), nav: t('projects.nav') }
+  : { back: t('blog.back'), end: t('blog.end'), nav: t('blog.nav') }
+
+// Neighbour entries of the same collection and language (newer / older by publish date)
+const siblings: Entry[] = isProject ? await getProjects(lang) : await getPosts(lang)
+const index = siblings.findIndex((item) => item.id === entry.id)
+const newer = index > 0 ? siblings[index - 1] : undefined
+const older = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : undefined
+
+const canonical = new URL(entryUrl(entry), Astro.site ?? 'https://example.com')
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': isProject ? 'CreativeWork' : 'BlogPosting',
+  headline: data.title,
+  ...(isProject ? { name: data.title } : {}),
+  description: data.description,
+  inLanguage: LOCALE_META[lang].intl,
+  datePublished: published.toISOString(),
+  ...(updated ? { dateModified: updated.toISOString() } : {}),
+  ...(data.tags.length > 0 ? { keywords: data.tags.join(', ') } : {}),
+  author: { '@type': 'Person', name: config.site.author },
+  mainEntityOfPage: canonical.href
+}
+---
+
+<BaseLayout
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  date={published}
+  modifiedDate={updated}
+  stylesheets={hasMath ? [katexStylesheet] : []}
+  alternates={alternates}
+  fallbackPath={section}
+>
+  <!-- Reading progress -->
+  <div id="reading-progress" aria-hidden="true"></div>
+
+  <!-- No entrance animation here: the full article appears immediately
+       (an opacity-0 fade-in reads as a dark flash on heavy pages). -->
+  <div
+    class="mx-auto max-w-[45rem] xl:grid xl:max-w-none xl:grid-cols-[minmax(0,1fr)_12.5rem] xl:gap-10"
+  >
+    <TOC {headings} lang={lang} />
+
+    <article class="min-w-0 xl:col-start-1 xl:row-start-1">
+      <!-- Cover image (optimized: responsive sizes, eager for LCP, no CLS) -->
+      {
+        data.heroImage && (
+          <Image
+            src={data.heroImage.src}
+            alt={data.heroImage.alt ?? data.title}
+            widths={[640, 960, 1280]}
+            sizes="(min-width: 784px) 720px, (min-width: 640px) calc(100vw - 64px), calc(100vw - 40px)"
+            fetchpriority="high"
+            loading="eager"
+            decoding="async"
+            class="mb-9 h-auto max-h-96 w-full rounded-2xl border border-line object-cover"
+          />
+        )
+      }
+
+      <!-- Entry header -->
+      <header class="mb-9">
+        <h1 class="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
+          {data.draft && <span class="me-2 text-accent">[{t('entry.draft')}]</span>}
+          {data.title}
+        </h1>
+
+        <!-- Editorial-style meta: plain muted text, no chips -->
+        <div class="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-ink-soft">
+          <time datetime={published.toISOString()}>{date(published)}</time>
+          {
+            updated && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{t('entry.updated', { date: date(updated) })}</span>
+              </>
+            )
+          }
+          <span aria-hidden="true">·</span>
+          <span>{t('entry.readingTime', { minutes: minutesRead })}</span>
+          {
+            config.pageview.server && (
+              <>
+                <span aria-hidden="true">·</span>
+                <Pageview lang={lang} />
+              </>
+            )
+          }
+          {
+            data.tags.length > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                {data.tags.map((tag, i) => (
+                  <>
+                    <span>#{tag}</span>
+                    {i < data.tags.length - 1 && (
+                      <span class="text-ink-soft/50" aria-hidden="true">
+                        /
+                      </span>
+                    )}
+                  </>
+                ))}
+              </>
+            )
+          }
+        </div>
+
+        <!-- Project links (source code / live demo) -->
+        <ProjectLinks lang={lang} repo={repo} demo={demo} variant="chip" class="mt-5" />
+      </header>
+
+      <!-- Entry body -->
+      <div class="prose prose-fill">
+        <slot />
+      </div>
+      <Mermaid />
+
+      <!-- Entry footer -->
+      <footer class="not-prose mt-14 border-t border-line pt-6">
+        <p class="font-serif text-sm italic text-ink-soft">{text.end}</p>
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <a href={localePath(lang, section)} class="chip" data-astro-prefetch>
+            <span class="i-lucide-arrow-left size-3.5" aria-hidden="true"></span>
+            {text.back}
+          </a>
+          <a href="#top" class="chip">
+            <span class="i-lucide-arrow-up size-3.5" aria-hidden="true"></span>
+            {t('entry.backToTop')}
+          </a>
+        </div>
+
+        <!-- Newer / older -->
+        {
+          (newer || older) && (
+            <nav class="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label={text.nav}>
+              {newer && (
+                <a
+                  href={entryUrl(newer)}
+                  class="paper-card group flex flex-col gap-1 p-4"
+                  data-astro-prefetch
+                >
+                  <span class="flex items-center gap-1.5 text-xs text-ink-soft">
+                    <span
+                      class="i-lucide-arrow-left size-3.5 transition-transform duration-300 group-hover:-translate-x-1"
+                      aria-hidden="true"
+                    />
+                    {t('entry.previous')}
+                  </span>
+                  <span class="line-clamp-2 text-sm font-medium group-hover:text-accent">
+                    {newer.data.title}
+                  </span>
+                </a>
+              )}
+              {older && (
+                <a
+                  href={entryUrl(older)}
+                  class="paper-card group flex flex-col gap-1 p-4 sm:text-end"
+                  data-astro-prefetch
+                >
+                  <span class="flex items-center justify-end gap-1.5 text-xs text-ink-soft sm:flex-row-reverse">
+                    <span
+                      class="i-lucide-arrow-right size-3.5 transition-transform duration-300 group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
+                    {t('entry.next')}
+                  </span>
+                  <span class="line-clamp-2 text-sm font-medium group-hover:text-accent">
+                    {older.data.title}
+                  </span>
+                </a>
+              )}
+            </nav>
+          )
+        }
+
+        {showComments && <Comment lang={lang} />}
+      </footer>
+    </article>
+  </div>
+
+  <!-- Structured data (BlogPosting / CreativeWork) -->
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</BaseLayout>
+
+<style>
+  #reading-progress {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 50;
+    height: 3px;
+    background-color: hsl(var(--accent) / 0.85);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const bar = document.getElementById('reading-progress')
+  if (bar) {
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      bar.style.transform = `scaleX(${max > 0 ? Math.min(window.scrollY / max, 1) : 0})`
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+  }
+</script>
