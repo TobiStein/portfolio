@@ -27,6 +27,11 @@ export function entryUrl(entry: Entry): string {
   return localePath(entryLocale(entry) ?? DEFAULT_LOCALE, `/${entry.collection}/${entrySlug(entry)}`)
 }
 
+/** Id unique across collections, shared by the search page and its index. */
+export function searchId(entry: Entry): string {
+  return `${entry.collection}/${entry.id}`
+}
+
 /** Estimated reading time in minutes, from the entry's raw markdown body. */
 export function getReadingTime(entry: Entry): number {
   return readingTime(stripMarkdown(entry.body ?? ''))

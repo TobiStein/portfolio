@@ -108,8 +108,8 @@ const jsonLd = {
           {data.title}
         </h1>
 
-        <!-- Editorial-style meta: plain muted text, no chips -->
-        <div class="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-ink-soft">
+        <!-- Meta row: muted text, then the tag pills inline -->
+        <div class="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-ink-soft">
           <time datetime={published.toISOString()}>{date(published)}</time>
           {
             updated && (
@@ -129,18 +129,16 @@ const jsonLd = {
               </>
             )
           }
+          {
+            data.tags.length > 0 && (
+              <ul class="flex flex-wrap items-center gap-1.5 sm:ms-2" aria-label={t('entry.tags')}>
+                {data.tags.map((tag) => (
+                  <li class="tag-pill">#{tag}</li>
+                ))}
+              </ul>
+            )
+          }
         </div>
-
-        <!-- Tags: pills on their own row -->
-        {
-          data.tags.length > 0 && (
-            <ul class="mt-4 flex flex-wrap items-center gap-1.5" aria-label={t('entry.tags')}>
-              {data.tags.map((tag) => (
-                <li class="tag-pill">#{tag}</li>
-              ))}
-            </ul>
-          )
-        }
 
         <!-- Project links (source code / live demo) -->
         <ProjectLinks lang={lang} repo={repo} demo={demo} variant="chip" class="mt-5" />

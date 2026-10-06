@@ -38,7 +38,7 @@ const menu = config.header.menu.map((item) => {
     <!-- Brand -->
     <a href={localePath(lang)} class="group flex items-center gap-2" aria-label={config.site.title}>
       <span
-        class="i-lucide-feather text-lg text-accent transition-transform duration-300 group-hover:-rotate-12"
+        class="i-lucide-fish text-lg text-accent transition-transform duration-300 group-hover:-rotate-12"
         aria-hidden="true"></span>
       <span class="font-serif text-lg font-semibold tracking-wide">{config.site.title}</span>
     </a>
@@ -64,6 +64,17 @@ const menu = config.header.menu.map((item) => {
     <!-- Actions -->
     <div class="flex items-center gap-1">
       <a
+        href={localePath(lang, '/search')}
+        class="icon-btn"
+        aria-label={t('search.title')}
+        title={t('search.title')}
+        aria-current={pathname === trim(localePath(lang, '/search')) ? 'page' : undefined}
+        data-astro-prefetch
+      >
+        <span class="i-lucide-search size-5" aria-hidden="true"></span>
+      </a>
+
+      <a
         id="lang-toggle"
         href={switchHref}
         hreflang={target}
@@ -77,17 +88,6 @@ const menu = config.header.menu.map((item) => {
         <span>{LOCALE_META[target].label}</span>
         <span class="sr-only"> – {switchLabel}</span>
       </a>
-
-      <button
-        id="palette-toggle"
-        type="button"
-        class="icon-btn"
-        aria-label={t('header.palette')}
-        title={t('header.palette')}
-      >
-        <span class="i-lucide-waves icon-abysse size-5" aria-hidden="true"></span>
-        <span class="i-lucide-leaf icon-fresh hidden size-5" aria-hidden="true"></span>
-      </button>
 
       <button
         id="theme-toggle"
@@ -191,14 +191,6 @@ const menu = config.header.menu.map((item) => {
   :global(html[data-theme='light']) #theme-toggle .icon-light,
   :global(html[data-theme='dark']) #theme-toggle .icon-dark,
   :global(html[data-theme='system']) #theme-toggle .icon-system {
-    display: inline-block;
-  }
-
-  /* Palette icons: waves (abysse) by default, leaf (fresh) when active */
-  :global(html[data-palette='fresh']) #palette-toggle .icon-abysse {
-    display: none;
-  }
-  :global(html[data-palette='fresh']) #palette-toggle .icon-fresh {
     display: inline-block;
   }
 </style>

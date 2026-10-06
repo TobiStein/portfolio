@@ -8,7 +8,6 @@ const fr = {
   // Accessibility & chrome
   'a11y.skip': 'Aller au contenu',
   'nav.primary': 'Navigation principale',
-  'header.palette': 'Changer de palette',
   'header.theme': 'Changer de thème (système / clair / sombre)',
   'lang.switchTo': 'Version française',
   'backToTop': 'Retour en haut',
@@ -50,6 +49,8 @@ const fr = {
   'entry.next': 'Suivant',
   'entry.backToTop': 'Haut de page',
   'entry.tags': 'Mots-clés',
+  'entry.typePost': 'Article',
+  'entry.typeProject': 'Projet',
   'toc.title': 'Sommaire',
   'toc.mobile': 'Table des matières',
   'comments.title': 'Commentaires',
@@ -62,6 +63,16 @@ const fr = {
   'pagination.page': 'page {page} sur {total}',
   'pagination.previous': 'Précédent',
   'pagination.next': 'Suivant',
+
+  // Search
+  'search.title': 'Recherche',
+  'search.description': 'Rechercher parmi les projets et les articles.',
+  'search.label': 'Rechercher un projet ou un article',
+  'search.placeholder': 'Titre, mot-clé, technologie…',
+  'search.tags': 'Filtrer par mot-clé',
+  'search.results.one': '{count} résultat',
+  'search.results.other': '{count} résultats',
+  'search.empty': 'Aucun résultat. Essayez un autre mot ou retirez un filtre.',
 
   // About
   'about.title': 'À propos',
@@ -103,7 +114,6 @@ export type UIKey = keyof typeof fr
 const en: Record<UIKey, string> = {
   'a11y.skip': 'Skip to content',
   'nav.primary': 'Primary navigation',
-  'header.palette': 'Switch palette',
   'header.theme': 'Toggle theme (system / light / dark)',
   'lang.switchTo': 'English version',
   'backToTop': 'Back to top',
@@ -141,6 +151,8 @@ const en: Record<UIKey, string> = {
   'entry.next': 'Next',
   'entry.backToTop': 'Back to top',
   'entry.tags': 'Tags',
+  'entry.typePost': 'Post',
+  'entry.typeProject': 'Project',
   'toc.title': 'Contents',
   'toc.mobile': 'Table of contents',
   'comments.title': 'Comments',
@@ -152,6 +164,15 @@ const en: Record<UIKey, string> = {
   'pagination.page': 'page {page} of {total}',
   'pagination.previous': 'Previous',
   'pagination.next': 'Next',
+
+  'search.title': 'Search',
+  'search.description': 'Search projects and posts.',
+  'search.label': 'Search projects and posts',
+  'search.placeholder': 'Title, tag, technology…',
+  'search.tags': 'Filter by tag',
+  'search.results.one': '{count} result',
+  'search.results.other': '{count} results',
+  'search.empty': 'No results. Try another word or remove a filter.',
 
   'about.title': 'About me',
   'about.me': 'Who am I?',

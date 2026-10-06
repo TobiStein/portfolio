@@ -1,0 +1,212 @@
+---
+import type { GetStaticPaths } from 'astro'
+
+import EntryCard from '@/components/EntryCard.astro'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { LOCALE_META, localePath, localeStaticPaths, useTranslations, type Locale } from '@/i18n'
+import { getPosts, getProjects, searchId, sortByDate } from '@/utils/server'
+
+export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths
+
+interface Props {
+  lang: Locale
+}
+
+const { lang } = Astro.props
+const { t, tn } = useTranslations(lang)
+
+// Projects and posts together, newest first: the full list is the no-JS fallback
+const entries = sortByDate([...(await getProjects(lang)), ...(await getPosts(lang))])
+const tags = [...new Set(entries.flatMap((entry) => entry.data.tags))].sort((a, b) =>
+  a.localeCompare(b, LOCALE_META[lang].intl)
+)
+---
+
+<BaseLayout lang={lang} title={t('search.title')} description={t('search.description')} noindex>
+  <div class="animate not-prose mx-auto max-w-[47.5rem]">
+    <header class="mb-6">
+      <h1 class="font-serif text-3xl font-semibold">{t('search.title')}</h1>
+      <p class="mt-2 text-sm text-ink-soft">{t('search.description')}</p>
+    </header>
+
+    <form
+      id="search-form"
+      role="search"
+      data-index={localePath(lang, '/search-index.json')}
+      data-locale={LOCALE_META[lang].intl}
+      data-results-one={t('search.results.one')}
+      data-results-other={t('search.results.other')}
+    >
+      <div class="relative">
+        <label for="search-input" class="sr-only">{t('search.label')}</label>
+        <span
+          class="i-lucide-search absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft"
+          aria-hidden="true"></span>
+        <input
+          id="search-input"
+          name="q"
+          type="search"
+          placeholder={t('search.placeholder')}
+          autocomplete="off"
+          aria-controls="search-results"
+          class="w-full rounded-xl border border-line bg-card px-10 py-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-ink-soft/60 focus:border-accent focus:ring-2 focus:ring-accent/20"
+        />
+      </div>
+
+      {
+        tags.length > 0 && (
+          <div id="search-tags" class="mt-4" hidden>
+            {/* Shown by the script: the filters need JavaScript */}
+            <p id="search-tags-label" class="mb-2 text-xs text-ink-soft">
+              {t('search.tags')}
+            </p>
+            <div class="flex flex-wrap gap-1.5" role="group" aria-labelledby="search-tags-label">
+              {tags.map((tag) => (
+                <button type="button" class="chip tag-filter" aria-pressed="false" data-tag={tag}>
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </form>
+
+    <p id="search-status" role="status" aria-live="polite" class="mt-6 text-sm text-ink-soft">
+      {tn('search.results', entries.length)}
+    </p>
+
+    <div id="search-results" class="mt-2 flex flex-col">
+      {
+        entries.map((entry) => (
+          <EntryCard
+            entry={entry}
+            lang={lang}
+            showType
+            data-search-id={searchId(entry)}
+            data-title={entry.data.title}
+            data-description={entry.data.description}
+            data-tags={JSON.stringify(entry.data.tags)}
+            data-date={entry.data.publishDate.toISOString()}
+          />
+        ))
+      }
+    </div>
+
+    <p id="search-empty" class="py-12 text-center text-ink-soft" hidden>{t('search.empty')}</p>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Selected tag filter: solid accent (text in --accent-fg, made for this background) */
+  .tag-filter[aria-pressed='true'],
+  .tag-filter[aria-pressed='true']:hover {
+    background-color: hsl(var(--accent) / 1);
+    border-color: hsl(var(--accent) / 1);
+    color: hsl(var(--accent-fg) / 1);
+  }
+</style>
+
+<script>
+  import { searchEntries, type SearchItem } from '@/utils/search'
+
+  const form = document.getElementById('search-form') as HTMLFormElement | null
+  const input = document.getElementById('search-input') as HTMLInputElement | null
+  const list = document.getElementById('search-results')
+  const status = document.getElementById('search-status')
+  const empty = document.getElementById('search-empty')
+
+  if (form && input && list && status && empty) {
+    const { index: indexUrl, locale, resultsOne = '', resultsOther = '' } = form.dataset
+    const plural = new Intl.PluralRules(locale)
+    const buttons = Array.from(form.querySelectorAll<HTMLButtonElement>('[data-tag]'))
+    const selected = new Set<string>()
+
+    // The cards are already in the page: read what the search needs from them
+    const cards = new Map<string, HTMLElement>()
+    const items: SearchItem[] = Array.from(
+      list.querySelectorAll<HTMLElement>('[data-search-id]')
+    ).map((card) => {
+      const { searchId = '', title = '', description = '', tags = '[]', date = '' } = card.dataset
+      cards.set(searchId, card)
+      return { id: searchId, title, description, tags: JSON.parse(tags), date, content: '' }
+    })
+
+    const render = () => {
+      const hits = searchEntries(items, input.value, [...selected])
+      const shown = new Set(hits.map((hit) => hit.id))
+      for (const [id, card] of cards) {
+        // Inline style: the card's `flex` class would override the `hidden` attribute
+        card.style.display = shown.has(id) ? '' : 'none'
+        card.style.borderBottomWidth = ''
+      }
+      hits.forEach((hit) => list.append(cards.get(hit.id)!)) // best matches first
+      const last = hits.at(-1)
+      if (last) cards.get(last.id)!.style.borderBottomWidth = '0'
+
+      const count = hits.length
+      status.textContent = (plural.select(count) === 'one' ? resultsOne : resultsOther).replace(
+        '{count}',
+        String(count)
+      )
+      empty.hidden = count > 0
+      buttons.forEach((button) =>
+        button.setAttribute('aria-pressed', String(selected.has(button.dataset.tag!)))
+      )
+
+      // Keep the URL shareable: ?q=…&tag=…
+      const url = new URL(location.href)
+      url.searchParams.delete('q')
+      url.searchParams.delete('tag')
+      if (input.value.trim()) url.searchParams.set('q', input.value.trim())
+      selected.forEach((tag) => url.searchParams.append('tag', tag))
+      history.replaceState(history.state, '', url)
+    }
+
+    // Full text is fetched the first time someone types; until then (or if it
+    // fails) titles, tags and descriptions are still searched.
+    let contentRequested = false
+    const loadContent = async () => {
+      if (contentRequested || !indexUrl) return
+      contentRequested = true
+      try {
+        const response = await fetch(indexUrl)
+        if (!response.ok) throw new Error(`Search index: ${response.status}`)
+        const index: Record<string, string> = await response.json()
+        items.forEach((item) => (item.content = index[item.id] ?? ''))
+        render()
+      } catch {
+        contentRequested = false // try again on the next keystroke
+      }
+    }
+
+    // Start from the URL, e.g. /fr/search/?tag=astro
+    const params = new URLSearchParams(location.search)
+    input.value = params.get('q') ?? ''
+    for (const tag of params.getAll('tag')) {
+      if (buttons.some((button) => button.dataset.tag === tag)) selected.add(tag)
+    }
+
+    let timer: number | undefined
+    input.addEventListener('input', () => {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(render, 120)
+      void loadContent()
+    })
+    buttons.forEach((button) =>
+      button.addEventListener('click', () => {
+        const tag = button.dataset.tag!
+        if (!selected.delete(tag)) selected.add(tag)
+        render()
+      })
+    )
+    form.addEventListener('submit', (event) => {
+      event.preventDefault()
+      render()
+    })
+
+    document.getElementById('search-tags')?.removeAttribute('hidden')
+    if (input.value) void loadContent()
+    render()
+  }
+</script>

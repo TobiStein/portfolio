@@ -32,6 +32,8 @@ const base = process.env.BASE_PATH || ''
 const site = process.env.SITE_URL || 'https://example.com'
 // The site root only redirects to /fr/ or /en/ — keep it out of the sitemap.
 const rootUrl = new URL(base ? `${base.replace(/\/?$/, '/')}` : '/', site).href
+// The search pages are not indexed (noindex) — keep them out of the sitemap too.
+const isSearchPage = (page: string) => /\/(fr|en)\/search\/?$/.test(new URL(page).pathname)
 
 // https://astro.build/config
 export default defineConfig({
@@ -91,7 +93,7 @@ export default defineConfig({
   integrations: [
     unocss(),
     sitemap({
-      filter: (page) => page !== rootUrl,
+      filter: (page) => page !== rootUrl && !isSearchPage(page),
       // hreflang links between the French and English versions of each page
       i18n: { defaultLocale: 'fr', locales: { fr: 'fr', en: 'en' } }
     })

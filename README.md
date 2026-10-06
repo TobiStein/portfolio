@@ -41,12 +41,9 @@ Le serveur de développement répond sur <http://localhost:4321>.
 
 Dans `src/site-config.ts`, les textes visibles s’écrivent une fois par langue : `{ fr: '…', en: '…' }`. **Un champ laissé vide (`''`, `[]`) est simplement masqué sur le site** : remplissez-le quand vous êtes prêt (liens GitHub / LinkedIn / e-mail, formation, etc.).
 
-Couleurs : deux palettes, chacune en version claire et sombre, dans `src/assets/styles/tokens.css` :
+Couleurs : une palette, **abysse**, en version claire (`:root`) et sombre (`.dark`) dans `src/assets/styles/tokens.css` ; le bouton de l’en-tête alterne système / clair / sombre. En plus des 8 couleurs de base, elle définit `--accent-vivid` (bleu-vert vif, décor uniquement, jamais en texte en mode clair), `--accent-fg` (texte sur fond `--accent` plein), `--accent-2` (pervenche) et `--glow` (lueur ambrée, jamais en texte). Tous les composants utilisent ces couleurs : halo d’en-tête (`#ambient`), surlignage (`mark`) et sélection dans `global.css` / `tokens.css`, pastilles (`chip` cliquable, `tag-pill` pour les tags), cartes (`paper-card`) et texte des articles (liens, listes, citations) dans `uno.config.ts`. Classes UnoCSS disponibles : `text-accent`, `text-accent-2`, `border-accent-vivid/60`, `bg-glow/35`, etc.
 
-- **abysse** (palette par défaut) : blocs `:root` (clair) et `.dark` (sombre). En plus des 8 couleurs de base, elle définit `--accent-vivid` (bleu-vert vif, décor uniquement, jamais en texte en mode clair), `--accent-fg` (texte sur fond `--accent` plein), `--accent-2` (pervenche) et `--glow` (lueur ambrée, jamais en texte). Tous les composants sont stylés avec ces couleurs : halo d’en-tête (`#ambient`), surlignage (`mark`) et sélection dans `global.css` / `tokens.css`, pastilles (`chip`, `tag-pill`), cartes (`paper-card`) et texte des articles (liens, listes, citations) dans `uno.config.ts`.
-- **fresh** : blocs `.fresh` et `.fresh.dark`.
-
-`site.palette` choisit la palette affichée aux nouveaux visiteurs (`'abysse'`) ; le bouton palette de l’en-tête (vagues / feuille) permet de basculer. Classes UnoCSS disponibles : `text-accent`, `text-accent-2`, `border-accent-vivid/60`, `bg-glow/35`, etc.
+Recherche : l’icône loupe de l’en-tête mène à `/fr/search/` (ou `/en/search/`). Elle cherche dans les projets et les articles de la langue courante (titre, mots-clés, description puis texte complet, sans tenir compte des accents) et propose un filtre par mot-clé (plusieurs mots-clés = contenus qui les ont tous). L’adresse garde la recherche, par exemple `/fr/search/?tag=astro`, pour la partager.
 
 ## Ajouter un article ou un projet
 

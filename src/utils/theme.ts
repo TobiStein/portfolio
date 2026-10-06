@@ -1,14 +1,8 @@
-/** Built-in color palettes ("abysse", the default, and "fresh").
- *  Hex values are the exact conversion of the `--paper` tokens in
- *  `src/assets/styles/tokens.css` (kept in sync manually). */
-export const THEME_COLORS = {
-  abysse: { light: '#f4f6fb', dark: '#0b0f1e' },
-  fresh: { light: '#f5f7fa', dark: '#11161d' }
-} as const
+/** Page background (`--paper` in src/assets/styles/tokens.css) for each mode, as hex:
+ *  painted before the CSS loads and used as the browser chrome color (kept in sync manually). */
+export const THEME_COLORS = { light: '#f4f6fb', dark: '#0b0f1e' } as const
 
-export type Palette = keyof typeof THEME_COLORS
-
-/** Browser chrome color (theme-color meta) for a palette + mode. */
-export function themeColorHex(palette: Palette, dark: boolean): string {
-  return THEME_COLORS[palette][dark ? 'dark' : 'light']
+/** Browser chrome color (theme-color meta) for a mode. */
+export function themeColorHex(dark: boolean): string {
+  return THEME_COLORS[dark ? 'dark' : 'light']
 }

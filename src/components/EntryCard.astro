@@ -8,10 +8,14 @@ interface Props {
   /** A blog post or a project */
   entry: Entry
   lang: Locale
+  /** Show "Project" / "Post" before the date (lists mixing both) */
+  showType?: boolean
   class?: string
+  /** Extra data-* attributes for the <article> (used by the search page) */
+  [attribute: `data-${string}`]: string | undefined
 }
 
-const { entry, lang, class: className } = Astro.props
+const { entry, lang, showType = false, class: className, ...attributes } = Astro.props
 const { t, date } = useTranslations(lang)
 const { data } = entry
 const shownDate = data.updatedDate ?? data.publishDate
@@ -21,7 +25,10 @@ const demo = entry.collection === 'projects' ? entry.data.demo : undefined
 const hasFooter = data.tags.length > 0 || Boolean(repo || demo)
 ---
 
-<article class={cn('post-row not-prose group relative flex flex-col gap-2', className)}>
+<article
+  class={cn('post-row not-prose group relative flex flex-col gap-2', className)}
+  {...attributes}
+>
   <h2
     class="font-serif text-xl font-semibold leading-snug transition-colors duration-200 group-hover:text-accent"
   >
@@ -32,6 +39,16 @@ const hasFooter = data.tags.length > 0 || Boolean(repo || demo)
   </h2>
 
   <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-ink-soft">
+    {
+      showType && (
+        <>
+          <span class="font-medium text-ink">
+            {t(entry.collection === 'projects' ? 'entry.typeProject' : 'entry.typePost')}
+          </span>
+          <span aria-hidden="true">·</span>
+        </>
+      )
+    }
     <time datetime={shownDate.toISOString()} class="tabular-nums">{date(shownDate)}</time>
     <span aria-hidden="true">·</span>
     <span>{t('entry.readingTime', { minutes: minutesRead })}</span>

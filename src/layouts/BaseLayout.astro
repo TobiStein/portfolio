@@ -63,13 +63,6 @@ const {
 } = Astro.props
 
 const { t } = useTranslations(lang)
-// `data-bg-<palette>-<mode>`: first-paint background read by the theme script
-const paletteBackgrounds = Object.fromEntries(
-  Object.entries(THEME_COLORS).flatMap(([palette, colors]) => [
-    [`data-bg-${palette}-light`, colors.light],
-    [`data-bg-${palette}-dark`, colors.dark]
-  ])
-)
 const siteUrl = Astro.site ?? 'https://example.com'
 
 const fullTitle = title
@@ -105,9 +98,9 @@ const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
 <html
   lang={lang}
   class="scroll-smooth"
-  {...paletteBackgrounds}
+  data-bg-light={THEME_COLORS.light}
+  data-bg-dark={THEME_COLORS.dark}
   data-default-theme={config.site.theme}
-  data-default-palette={config.site.palette}
 >
   <head>
     <meta charset="utf-8" />
@@ -133,7 +126,7 @@ const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
       title={config.site.title}
       href={localePath(lang, '/rss.xml')}
     />
-    <meta name="theme-color" content={themeColorHex(config.site.palette, false)} />
+    <meta name="theme-color" content={themeColorHex(false)} />
     {stylesheets.map((href) => <link rel="stylesheet" href={href} />)}
 
     {noindex && <meta name="robots" content="noindex, nofollow" />}
@@ -160,7 +153,7 @@ const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
       )
     }
 
-    <!-- Theme + palette controller: first paint, toggle clicks and OS changes -->
+    <!-- Theme controller: first paint, toggle clicks and OS changes -->
     <script is:inline set:html={themeScript} />
   </head>
 
