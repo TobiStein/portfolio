@@ -129,24 +129,18 @@ const jsonLd = {
               </>
             )
           }
-          {
-            data.tags.length > 0 && (
-              <>
-                <span aria-hidden="true">·</span>
-                {data.tags.map((tag, i) => (
-                  <>
-                    <span>#{tag}</span>
-                    {i < data.tags.length - 1 && (
-                      <span class="text-ink-soft/50" aria-hidden="true">
-                        /
-                      </span>
-                    )}
-                  </>
-                ))}
-              </>
-            )
-          }
         </div>
+
+        <!-- Tags: pills on their own row -->
+        {
+          data.tags.length > 0 && (
+            <ul class="mt-4 flex flex-wrap items-center gap-1.5" aria-label={t('entry.tags')}>
+              {data.tags.map((tag) => (
+                <li class="tag-pill">#{tag}</li>
+              ))}
+            </ul>
+          )
+        }
 
         <!-- Project links (source code / live demo) -->
         <ProjectLinks lang={lang} repo={repo} demo={demo} variant="chip" class="mt-5" />

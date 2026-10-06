@@ -63,6 +63,13 @@ const {
 } = Astro.props
 
 const { t } = useTranslations(lang)
+// `data-bg-<palette>-<mode>`: first-paint background read by the theme script
+const paletteBackgrounds = Object.fromEntries(
+  Object.entries(THEME_COLORS).flatMap(([palette, colors]) => [
+    [`data-bg-${palette}-light`, colors.light],
+    [`data-bg-${palette}-dark`, colors.dark]
+  ])
+)
 const siteUrl = Astro.site ?? 'https://example.com'
 
 const fullTitle = title
@@ -98,10 +105,7 @@ const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
 <html
   lang={lang}
   class="scroll-smooth"
-  data-bg-ink-light={THEME_COLORS.ink.light}
-  data-bg-ink-dark={THEME_COLORS.ink.dark}
-  data-bg-fresh-light={THEME_COLORS.fresh.light}
-  data-bg-fresh-dark={THEME_COLORS.fresh.dark}
+  {...paletteBackgrounds}
   data-default-theme={config.site.theme}
   data-default-palette={config.site.palette}
 >

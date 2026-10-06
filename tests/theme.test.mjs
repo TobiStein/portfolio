@@ -89,10 +89,11 @@ function expectPaint(p, palette, dark) {
   assert.equal(p.meta.content, p.root.style.backgroundColor)
   assert.equal(p.classes.has('dark'), dark)
   assert.equal(p.classes.has('fresh'), palette === 'fresh')
+  assert.equal(p.classes.has('abysse'), palette === 'abysse')
 }
 
 test('first paint respects both saved palettes and all theme modes', () => {
-  for (const palette of ['ink', 'fresh']) {
+  for (const palette of ['abysse', 'fresh']) {
     for (const theme of ['system', 'light', 'dark']) {
       for (const osDark of [false, true]) {
         const p = page({ stored: { 'ink-palette': palette, 'ink-theme': theme }, dark: osDark })
@@ -111,13 +112,13 @@ test('OS changes repaint only in system mode; switches update background and chr
   p.changeOS(true)
   expectPaint(p, 'fresh', false)
   p.click('palette-toggle')
-  expectPaint(p, 'ink', false)
+  expectPaint(p, 'abysse', false)
   p.click('theme-toggle') // light -> dark
-  expectPaint(p, 'ink', true)
+  expectPaint(p, 'abysse', true)
   p.changeOS(false)
-  expectPaint(p, 'ink', true)
+  expectPaint(p, 'abysse', true)
   p.click('theme-toggle') // dark -> system, follows the current OS
-  expectPaint(p, 'ink', false)
+  expectPaint(p, 'abysse', false)
 })
 
 test('controls remain usable without localStorage and honor configured starting mode', () => {
@@ -127,7 +128,7 @@ test('controls remain usable without localStorage and honor configured starting 
   assert.equal(p.root.dataset.theme, 'system')
   expectPaint(p, 'fresh', false)
   p.click('palette-toggle')
-  expectPaint(p, 'ink', false)
+  expectPaint(p, 'abysse', false)
 })
 
 test('saved preferences survive reload and invalid stored values use defaults', () => {
@@ -135,10 +136,11 @@ test('saved preferences survive reload and invalid stored values use defaults', 
   const p = page({ stored })
   p.click('palette-toggle')
   p.click('theme-toggle')
-  expectPaint(page({ stored, dark: true }), 'ink', false)
+  expectPaint(page({ stored, dark: true }), 'abysse', false)
   expectPaint(
     page({ stored: { 'ink-theme': 'invalid', 'ink-palette': 'invalid' } }),
     'fresh',
     false
-  )
+  )  // Visitors who saved the former "ink" palette fall back to the default
+  expectPaint(page({ stored: { 'ink-palette': 'ink' } }), 'fresh', false)
 })

@@ -13,6 +13,9 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Own stacking context: #ambient (z-index: -1) is drawn above the body's
+     paper background but below the content — otherwise the background hides it */
+  isolation: isolate;
 }
 
 /* Visible keyboard focus (accent ring) for accessibility */
@@ -30,8 +33,8 @@ body {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(55% 55% at 12% 0%, hsl(var(--accent) / 0.12), transparent 65%),
-    radial-gradient(45% 45% at 88% 2%, hsl(var(--accent) / 0.1), transparent 65%),
+    radial-gradient(55% 55% at 12% 0%, hsl(var(--accent-vivid) / 0.18), transparent 65%),
+    radial-gradient(45% 45% at 88% 2%, hsl(var(--accent-2) / 0.14), transparent 65%),
     radial-gradient(38% 38% at 52% 0%, hsl(var(--wash) / 0.7), transparent 72%);
 }
 
@@ -368,7 +371,7 @@ hr {
 
 /* Highlighted text (<mark>) */
 mark {
-  background-color: hsl(var(--accent) / 0.18);
+  background-color: hsl(var(--glow) / 0.35);
   color: inherit;
   border-radius: 0.2em;
   padding-inline: 0.1em;

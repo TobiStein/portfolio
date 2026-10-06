@@ -1,15 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <!-- Source of og-card.png (social networks do not display SVG previews) -->
-  <!-- Paper background -->
-  <rect width="1200" height="630" fill="#faf5f6"/>
-  <!-- Inner frame -->
-  <rect x="56" y="48" width="1088" height="534" rx="24" fill="none" stroke="#c23d53" stroke-opacity="0.35" stroke-width="3"/>
+  <!-- Source of og-card.png (social networks do not display SVG previews).
+       Palette abysse · light — same halos as #ambient in global.css, a bit stronger
+       so they survive the small preview size. -->
+  <defs>
+    <!-- Left halo: vivid blue-green -->
+    <radialGradient id="halo-left" cx="0.12" cy="0" r="0.55">
+      <stop offset="0" stop-color="#22c3c3" stop-opacity="0.30"/>
+      <stop offset="0.65" stop-color="#22c3c3" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Right halo: periwinkle -->
+    <radialGradient id="halo-right" cx="0.88" cy="0.02" r="0.45">
+      <stop offset="0" stop-color="#454dc4" stop-opacity="0.24"/>
+      <stop offset="0.65" stop-color="#454dc4" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Center wash -->
+    <radialGradient id="halo-center" cx="0.52" cy="0" r="0.38">
+      <stop offset="0" stop-color="#e0eff5" stop-opacity="0.7"/>
+      <stop offset="0.72" stop-color="#e0eff5" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Paper background + halos -->
+  <rect width="1200" height="630" fill="#f4f6fb"/>
+  <rect width="1200" height="630" fill="url(#halo-left)"/>
+  <rect width="1200" height="630" fill="url(#halo-right)"/>
+  <rect width="1200" height="630" fill="url(#halo-center)"/>
+
+  <!-- Inner frame (decor: vivid blue-green) -->
+  <rect x="56" y="48" width="1088" height="534" rx="24" fill="none" stroke="#22c3c3" stroke-opacity="0.45" stroke-width="3"/>
   <!-- Accent rule -->
-  <rect x="96" y="120" width="96" height="6" rx="3" fill="#c23d53"/>
+  <rect x="96" y="120" width="96" height="6" rx="3" fill="#087078"/>
   <!-- Title -->
-  <text x="96" y="320" font-family="Georgia, 'Times New Roman', serif" font-size="88" font-weight="600" fill="#1f2533">Tobi Stein</text>
-  <text x="98" y="392" font-family="Georgia, 'Times New Roman', serif" font-size="40" fill="#5a6172">Portfolio</text>
-  <!-- Ink dot -->
-  <circle cx="1048" cy="480" r="26" fill="#c23d53"/>
-  <circle cx="1096" cy="480" r="10" fill="#c23d53" fill-opacity="0.45"/>
+  <text x="96" y="320" font-family="Georgia, 'Times New Roman', serif" font-size="88" font-weight="600" fill="#151c3c">Tobi Stein</text>
+  <text x="98" y="392" font-family="Georgia, 'Times New Roman', serif" font-size="40" fill="#565c76">Portfolio</text>
+  <!-- Blue-green dot + the single amber spark -->
+  <circle cx="1048" cy="480" r="26" fill="#087078"/>
+  <circle cx="1096" cy="480" r="10" fill="#fab142"/>
 </svg>

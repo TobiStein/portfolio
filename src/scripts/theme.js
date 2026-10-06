@@ -17,18 +17,19 @@
     }
   }
   const modes = ['system', 'light', 'dark']
-  const palettes = ['ink', 'fresh']
+  // The first palette is the fallback; each one adds its name as a class on <html>
+  const palettes = ['abysse', 'fresh']
   const storedTheme = read('ink-theme')
   const storedPalette = read('ink-palette')
   let theme = modes.includes(storedTheme) ? storedTheme : root.dataset.defaultTheme
   let palette = palettes.includes(storedPalette) ? storedPalette : root.dataset.defaultPalette
   if (!modes.includes(theme)) theme = 'system'
-  if (!palettes.includes(palette)) palette = 'ink'
+  if (!palettes.includes(palette)) palette = palettes[0]
 
   const apply = () => {
     const dark = theme === 'dark' || (theme === 'system' && systemTheme.matches)
     root.classList.toggle('dark', dark)
-    root.classList.toggle('fresh', palette === 'fresh')
+    for (const name of palettes) root.classList.toggle(name, name === palette)
     root.dataset.theme = theme
     root.dataset.palette = palette
     const background = root.getAttribute(`data-bg-${palette}-${dark ? 'dark' : 'light'}`)
@@ -54,7 +55,7 @@
       save('ink-theme', theme)
       transition()
     } else if (event.target.closest('#palette-toggle')) {
-      palette = palette === 'ink' ? 'fresh' : 'ink'
+      palette = palettes[(palettes.indexOf(palette) + 1) % palettes.length]
       save('ink-palette', palette)
       transition()
     }

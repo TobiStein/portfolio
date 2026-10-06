@@ -48,8 +48,8 @@ export interface Config {
     avatar: string
     /** Open Graph image (link previews); a path under `public/` */
     ogImage: string
-    /** Default color palette for first-time visitors: 'ink' | 'fresh' */
-    palette: 'ink' | 'fresh'
+    /** Default color palette for first-time visitors: 'abysse' | 'fresh' */
+    palette: 'abysse' | 'fresh'
     /** Default theme for first-time visitors: 'light' | 'dark' | 'system' (follow OS) */
     theme: 'light' | 'dark' | 'system'
     /** Separator between page title and site title, e.g. " · " */
@@ -125,7 +125,7 @@ export const config: Config = {
     favicon: '/favicon/favicon.ico',
     avatar: '/avatar2.png',
     ogImage: '/og-card.png',
-    palette: 'fresh',
+    palette: 'abysse',
     theme: 'system',
     titleDelimiter: ' · '
   },

@@ -41,7 +41,12 @@ Le serveur de développement répond sur <http://localhost:4321>.
 
 Dans `src/site-config.ts`, les textes visibles s’écrivent une fois par langue : `{ fr: '…', en: '…' }`. **Un champ laissé vide (`''`, `[]`) est simplement masqué sur le site** : remplissez-le quand vous êtes prêt (liens GitHub / LinkedIn / e-mail, formation, etc.).
 
-Couleurs : la palette personnalisée est le bloc **ink** de `tokens.css` (`:root` pour le mode clair, `.dark` pour le mode sombre). La palette proposée par défaut aux nouveaux visiteurs est réglée par `site.palette`, qui vaut actuellement `'fresh'` : passez-la à `'ink'` pour afficher vos couleurs par défaut. Le bouton palette de l’en-tête permet toujours de basculer de l’une à l’autre.
+Couleurs : deux palettes, chacune en version claire et sombre, dans `src/assets/styles/tokens.css` :
+
+- **abysse** (palette par défaut) : blocs `:root` (clair) et `.dark` (sombre). En plus des 8 couleurs de base, elle définit `--accent-vivid` (bleu-vert vif, décor uniquement, jamais en texte en mode clair), `--accent-fg` (texte sur fond `--accent` plein), `--accent-2` (pervenche) et `--glow` (lueur ambrée, jamais en texte). Tous les composants sont stylés avec ces couleurs : halo d’en-tête (`#ambient`), surlignage (`mark`) et sélection dans `global.css` / `tokens.css`, pastilles (`chip`, `tag-pill`), cartes (`paper-card`) et texte des articles (liens, listes, citations) dans `uno.config.ts`.
+- **fresh** : blocs `.fresh` et `.fresh.dark`.
+
+`site.palette` choisit la palette affichée aux nouveaux visiteurs (`'abysse'`) ; le bouton palette de l’en-tête (vagues / feuille) permet de basculer. Classes UnoCSS disponibles : `text-accent`, `text-accent-2`, `border-accent-vivid/60`, `bg-glow/35`, etc.
 
 ## Ajouter un article ou un projet
 

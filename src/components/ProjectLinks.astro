@@ -8,12 +8,12 @@ interface Props {
   repo?: string
   /** Live demo URL */
   demo?: string
-  /** `inline`: small text links (lists) · `chip`: pill buttons (project page) */
-  variant?: 'inline' | 'chip'
+  /** `icon`: round icon-only buttons (cards) · `chip`: pill buttons with text (project page) */
+  variant?: 'icon' | 'chip'
   class?: string
 }
 
-const { lang, repo, demo, variant = 'inline', class: className } = Astro.props
+const { lang, repo, demo, variant = 'icon', class: className } = Astro.props
 const { t } = useTranslations(lang)
 
 interface ProjectLink {
@@ -40,7 +40,7 @@ const isChip = variant === 'chip'
     <div
       class={cn(
         'not-prose flex flex-wrap items-center',
-        isChip ? 'gap-3' : 'gap-x-4 gap-y-1',
+        isChip ? 'gap-3' : 'gap-2',
         className
       )}
     >
@@ -49,10 +49,16 @@ const isChip = variant === 'chip'
           href={link.url}
           target="_blank"
           rel="noreferrer"
-          class={isChip ? 'chip !px-3 !py-1 text-sm' : 'tag-link'}
+          class={
+            isChip
+              ? 'chip !px-3 !py-1 text-sm hover:!border-accent/50 hover:!text-accent'
+              : 'inline-flex size-8 items-center justify-center rounded-full border border-line bg-wash text-ink-soft transition-colors duration-200 hover:border-accent/50 hover:text-accent'
+          }
+          aria-label={isChip ? undefined : link.label}
+          title={isChip ? undefined : link.label}
         >
-          <span class={cn(link.icon, 'size-3.5')} aria-hidden="true" />
-          {link.label}
+          <span class={cn(link.icon, isChip ? 'size-3.5' : 'size-4')} aria-hidden="true" />
+          {isChip && link.label}
         </a>
       ))}
     </div>

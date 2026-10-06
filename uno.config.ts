@@ -38,7 +38,7 @@ const typography: TypographyOptions = {
     bullets: 'hsl(var(--ink-soft) / 0.5)',
     hr: 'hsl(var(--line) / 1)',
     quotes: inkSoft,
-    'quote-borders': 'hsl(var(--accent) / 0.45)',
+    'quote-borders': 'hsl(var(--accent-2) / 0.55)',
     kbd: ink,
     code: ink,
     'pre-code': inkSoft,
@@ -84,7 +84,7 @@ const typography: TypographyOptions = {
       'font-weight': '500',
       color: ink,
       'text-decoration': 'underline',
-      'text-decoration-color': 'hsl(var(--accent) / 0.45)',
+      'text-decoration-color': 'hsl(var(--accent-vivid) / 0.6)',
       'text-decoration-thickness': '1px',
       'text-underline-offset': '0.18em',
       transition: 'color 0.2s ease, text-decoration-color 0.2s ease',
@@ -92,7 +92,7 @@ const typography: TypographyOptions = {
     },
     '.prose a:hover,.prose a:focus-visible': {
       color: accent,
-      'text-decoration-color': 'hsl(var(--accent) / 0.9)'
+      'text-decoration-color': 'hsl(var(--accent) / 1)'
     },
     '.prose :is(h1,h2,h3,h4,h5,h6)>a': { 'text-decoration': 'none' },
 
@@ -116,7 +116,7 @@ const typography: TypographyOptions = {
       'font-family': 'var(--font-serif)',
       'font-style': 'normal',
       'font-weight': '400',
-      'border-inline-start': '2px solid hsl(var(--accent) / 0.35)',
+      'border-inline-start': '2px solid hsl(var(--accent-2) / 0.55)',
       'border-radius': '0',
       'background-color': 'transparent',
       'box-shadow': 'none',
@@ -139,7 +139,7 @@ const typography: TypographyOptions = {
       width: '0.38em',
       height: '0.38em',
       'border-radius': '999px',
-      'background-color': 'hsl(var(--accent) / 0.6)'
+      'background-color': 'hsl(var(--accent-vivid) / 1)'
     },
     '.prose ol': {
       'list-style': 'none',
@@ -160,7 +160,7 @@ const typography: TypographyOptions = {
       'font-family': 'var(--font-serif)',
       'font-weight': '600',
       'font-size': '0.88em',
-      color: 'hsl(var(--accent) / 0.85)',
+      color: 'hsl(var(--accent-2) / 1)',
       'min-width': '1.5em',
       'text-align': 'end'
     },
@@ -255,8 +255,13 @@ export default defineConfig({
       // Muted surface
       wash: 'hsl(var(--wash) / <alpha-value>)',
       card: 'hsl(var(--card) / <alpha-value>)',
-      // Accent (brand)
+      // Accents (brand): primary teal, then the abysse extras — vivid teal (decor only,
+      // never text on light backgrounds), text on solid accent, periwinkle, amber glow
       accent: 'hsl(var(--accent) / <alpha-value>)',
+      'accent-vivid': 'hsl(var(--accent-vivid) / <alpha-value>)',
+      'accent-fg': 'hsl(var(--accent-fg) / <alpha-value>)',
+      'accent-2': 'hsl(var(--accent-2) / <alpha-value>)',
+      glow: 'hsl(var(--glow) / <alpha-value>)',
       ring: 'hsl(var(--ring) / <alpha-value>)',
       // Borders
       line: 'hsl(var(--line) / <alpha-value>)'
@@ -274,9 +279,13 @@ export default defineConfig({
       'inline-flex min-h-6 items-center gap-1 text-xs text-ink-soft underline-offset-4 transition-colors duration-200 hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline',
     // Paper card
     'paper-card':
-      'rounded-xl border border-line bg-card/60 transition-all duration-300 hover:border-accent/40 hover:shadow-sm',
-    // Pill chip (tags, meta)
-    chip: 'inline-flex items-center gap-1 rounded-full border border-line bg-wash px-2.5 py-0.5 text-xs text-ink-soft transition-colors duration-200 hover:border-accent/50 hover:text-accent',
+      'rounded-xl border border-line bg-card/60 transition-all duration-300 hover:border-accent-vivid/60 hover:shadow-[0_2px_14px_hsl(var(--accent-vivid)/0.12)]',
+    // Tag label: same pill shape as `chip`, periwinkle (--accent-2) and no hover,
+    // so it reads as information, not as a button
+    'tag-pill':
+      'inline-flex items-center rounded-full border border-accent-2/20 bg-accent-2/10 px-2.5 py-0.5 text-xs text-accent-2',
+    // Pill chip (clickable: back links, project buttons…)
+    chip: 'inline-flex items-center gap-1 rounded-full border border-accent/18 bg-accent/10 px-2.5 py-0.5 text-xs text-accent transition-colors duration-200 hover:border-accent/50 hover:bg-accent/16',
     // Text link with underline animation
     'link-ink':
       'underline decoration-accent/35 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent/80',

@@ -85,7 +85,7 @@ const menu = config.header.menu.map((item) => {
         aria-label={t('header.palette')}
         title={t('header.palette')}
       >
-        <span class="i-lucide-feather icon-ink size-5" aria-hidden="true"></span>
+        <span class="i-lucide-waves icon-abysse size-5" aria-hidden="true"></span>
         <span class="i-lucide-leaf icon-fresh hidden size-5" aria-hidden="true"></span>
       </button>
 
@@ -194,8 +194,8 @@ const menu = config.header.menu.map((item) => {
     display: inline-block;
   }
 
-  /* Palette icons: feather (ink) by default, leaf (fresh) when active */
-  :global(html[data-palette='fresh']) #palette-toggle .icon-ink {
+  /* Palette icons: waves (abysse) by default, leaf (fresh) when active */
+  :global(html[data-palette='fresh']) #palette-toggle .icon-abysse {
     display: none;
   }
   :global(html[data-palette='fresh']) #palette-toggle .icon-fresh {
