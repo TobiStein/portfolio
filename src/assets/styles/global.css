@@ -33,7 +33,7 @@ body {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(55% 55% at 12% 0%, hsl(var(--accent-vivid) / 0.18), transparent 65%),
+    radial-gradient(55% 55% at 12% 0%, hsl(var(--accent-vivid) / 0.14), transparent 65%),
     radial-gradient(45% 45% at 88% 2%, hsl(var(--accent-2) / 0.14), transparent 65%),
     radial-gradient(38% 38% at 52% 0%, hsl(var(--wash) / 0.7), transparent 72%);
 }

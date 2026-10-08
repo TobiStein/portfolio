@@ -77,6 +77,7 @@ const fr = {
   // About
   'about.title': 'À propos',
   'about.me': 'Qui suis-je ?',
+  'about.experience': 'Expérience',
   'about.education': 'Formation',
   'about.skills': 'Compétences',
   'about.contact': 'Me contacter',
@@ -176,6 +177,7 @@ const en: Record<UIKey, string> = {
 
   'about.title': 'About me',
   'about.me': 'Who am I?',
+  'about.experience': 'Experience',
   'about.education': 'Education',
   'about.skills': 'Skills',
   'about.contact': 'Get in touch',

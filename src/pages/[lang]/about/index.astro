@@ -14,7 +14,7 @@ interface Props {
 
 const { lang } = Astro.props
 const { t, pick } = useTranslations(lang)
-const { education, skills } = config.about
+const { experience, education, skills } = config.about
 
 const description = pick(config.site.description)
 const bio = pick(config.about.bio)
@@ -40,6 +40,31 @@ const contacts = socialLinks(config.footer.social)
             {bio.map((paragraph) => (
               <p>{paragraph}</p>
             ))}
+          </>
+        )
+      }
+
+      <!-- Experience -->
+      {
+        experience.length > 0 && (
+          <>
+            <h2>{t('about.experience')}</h2>
+            <div class="not-prose paper-card divide-y divide-line overflow-hidden">
+              {experience.map((item) => (
+                <div class="px-5 py-4">
+                  <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                    <div>
+                      <p class="font-serif font-semibold leading-snug">{pick(item.role)}</p>
+                      <p class="mt-0.5 text-sm text-ink-soft">{item.organization}</p>
+                    </div>
+                    <p class="shrink-0 font-mono text-xs text-ink-soft sm:ms-6">{pick(item.date)}</p>
+                  </div>
+                  {item.description && (
+                    <p class="mt-3 text-sm leading-relaxed text-ink-soft">{pick(item.description)}</p>
+                  )}
+                </div>
+              ))}
+            </div>
           </>
         )
       }

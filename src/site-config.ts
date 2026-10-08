@@ -22,6 +22,17 @@ export interface EducationItem {
   date: Localized
 }
 
+export interface ExperienceItem {
+  /** Job title, e.g. `{ fr: 'Développeuse front-end', en: 'Front-end developer' }` */
+  role: Localized
+  /** Company, lab or team */
+  organization: string
+  /** Period, e.g. `{ fr: 'nov. 2023 – janv. 2024', en: 'Nov 2023 – Jan 2024' }` */
+  date: Localized
+  /** What you did, in a few sentences */
+  description?: Localized
+}
+
 export interface SkillGroup {
   title: Localized
   /** A plain string when it is the same in both languages ('Git'), otherwise `{ fr, en }` */
@@ -97,6 +108,8 @@ export interface Config {
   about: {
     /** Biography; separate paragraphs with an empty line */
     bio: Localized
+    /** Work experience, most recent first; hidden when empty */
+    experience: ExperienceItem[]
     /** Education timeline; hidden when empty */
     education: EducationItem[]
     /** Skill groups; hidden when empty */
@@ -114,11 +127,11 @@ export interface Config {
 
 export const config: Config = {
   site: {
-    title: 'Tobi Stein',
-    author: 'Tobi Stein',
+    title: 'Khalissa Rhoulam',
+    author: 'Khalissa Rhoulam',
     description: {
-      fr: 'Portfolio de Tobi Stein — projets, articles et parcours.',
-      en: 'Tobi Stein’s portfolio — projects, writing and background.'
+      fr: 'Portfolio de Khalissa Rhoulam : intelligence artificielle, robotique et développement.',
+      en: 'Khalissa Rhoulam’s portfolio: artificial intelligence, robotics and software development.'
     },
     favicon: '/favicon/favicon.ico',
     avatar: '/avatar2.png',
@@ -142,13 +155,15 @@ export const config: Config = {
   },
 
   footer: {
-    // Replaces the default « © <year> <author> » line, e.g. '© 2024 – 2026 Tobi Stein'
+    // Replaces the default « © <year> <author> » line, e.g. '© 2024 – 2026 Khalissa Rhoulam'
     // copyright: '',
     rss: true,
     links: [],
     social: {
-      github: { label: 'GitHub', url: '' },
+      github: { label: 'GitHub', url: 'https://github.com/TobiStein' },
+      // Full profile URL, e.g. 'https://www.linkedin.com/in/…'
       linkedin: { label: 'LinkedIn', url: '' },
+      // 'mailto:…' — left empty on purpose (no personal contact details on the site)
       mail: { label: 'E-mail', url: '' }
     }
   },
@@ -164,10 +179,14 @@ export const config: Config = {
   home: {
     hero: {
       tagline: {
-        fr: 'Développeur / Créateur / Curieux',
-        en: 'Developer / Maker / Curious mind'
+        fr: 'Intelligence artificielle · Robotique · Développement',
+        en: 'Artificial intelligence · Robotics · Development'
       },
-      location: { fr: 'France', en: 'France' }
+      location: { fr: 'Lyon, France', en: 'Lyon, France' },
+      summary: {
+        fr: 'Formée en intelligence artificielle à l’Université Claude Bernard Lyon 1, je mêle algorithmes, modélisation 3D et électronique, avec un intérêt particulier pour l’apprentissage par renforcement.',
+        en: 'Trained in artificial intelligence at Université Claude Bernard Lyon 1, I combine algorithms, 3D modelling and electronics, with a particular interest in reinforcement learning.'
+      }
     },
     recentProjects: 2,
     recentPosts: 3
@@ -175,26 +194,81 @@ export const config: Config = {
 
   about: {
     bio: {
-      fr: 'Bonjour, je suis Tobi Stein. Ce paragraphe est un texte de démonstration : remplacez-le par quelques lignes sur votre parcours et ce qui vous motive.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      en: 'Hi, I’m Tobi Stein. This paragraph is placeholder text: replace it with a few lines about your background and what drives you.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+      fr: 'Je suis Khalissa Rhoulam, formée en intelligence artificielle à l’Université Claude Bernard Lyon 1 (licence et master), après un DUT informatique. Je cultive une approche pluridisciplinaire qui mêle algorithmes, modélisation 3D et électronique, avec un intérêt particulier pour l’apprentissage par renforcement.\n\nMes projets vont de l’IA embarquée dans des robots (un robot joueur de Puissance 4, une flotte de robots autonomes) à la vision par ordinateur et à la simulation biomécanique. J’accorde aussi une place importante à la documentation technique : cahiers des charges, spécifications, dossiers de conception.\n\nJe recherche un poste d’ingénieure d’études en informatique, et reste ouverte à toutes les opportunités.\n\nEn dehors de l’informatique, je conçois de petites pièces en 3D, je pratique la soudure (dernier projet en date : l’assemblage complet d’une radio) et je dessine régulièrement, du croquis à l’art numérique.',
+      en: 'I’m Khalissa Rhoulam, trained in artificial intelligence at Université Claude Bernard Lyon 1 (bachelor’s and master’s degrees), after a two-year technical degree in computer science. I take a multidisciplinary approach that combines algorithms, 3D modelling and electronics, with a particular interest in reinforcement learning.\n\nMy projects range from AI running on robots (a robot that plays Connect Four, a fleet of autonomous robots) to computer vision and biomechanical simulation. I also put a lot of care into technical documentation: requirements, specifications, design documents.\n\nI am looking for a position as a research engineer in computer science, and remain open to all opportunities.\n\nOutside computing, I design small 3D parts, solder (most recent project: assembling a radio from scratch) and draw regularly, from sketches to digital art.'
     },
-    // Example:
-    // { school: 'Université …', major: { fr: 'Informatique', en: 'Computer science' },
-    //   degree: { fr: 'Master', en: "Master's degree" }, date: { fr: '2021 – 2024', en: '2021 – 2024' } }
-    education: [],
+    experience: [
+      {
+        role: { fr: 'Développeuse front-end', en: 'Front-end developer' },
+        organization: 'Équipe GRADIENT, laboratoire LIRIS (Villeurbanne)',
+        date: { fr: 'nov. 2023 – janv. 2024', en: 'Nov 2023 – Jan 2024' },
+        description: {
+          fr: 'Création du site vitrine du projet GRADIENT, en totale autonomie. Face à un besoin initial peu défini, j’ai conçu et fait évoluer plusieurs maquettes sur Figma pour structurer les attentes et valider l’identité visuelle, puis assuré l’intégration responsive (HTML5, CSS3, Bootstrap) dans des délais serrés.',
+          en: 'Built the showcase website of the GRADIENT project, fully autonomously. Starting from loosely defined needs, I designed and iterated on several Figma mock-ups to structure expectations and validate the visual identity, then delivered the responsive integration (HTML5, CSS3, Bootstrap) on a tight schedule.'
+        }
+      }
+    ],
+    education: [
+      {
+        school: 'Université Claude Bernard Lyon 1',
+        major: {
+          fr: 'Informatique, parcours intelligence artificielle',
+          en: 'Computer science, artificial intelligence track'
+        },
+        degree: { fr: 'Licence et master', en: 'Bachelor’s and master’s degrees' },
+        date: { fr: '2023 – 2026', en: '2023 – 2026' }
+      },
+      {
+        school: 'IUT Lyon 1',
+        major: { fr: 'Informatique', en: 'Computer science' },
+        degree: { fr: 'DUT', en: 'Two-year technical degree (DUT)' },
+        date: { fr: '2020 – 2023', en: '2020 – 2023' }
+      },
+      {
+        school: 'Faculté de médecine Lyon Est (Lyon 1)',
+        major: {
+          fr: 'Première année commune aux études de santé',
+          en: 'First year of health studies'
+        },
+        degree: { fr: 'PACES', en: 'PACES' },
+        date: { fr: '2018 – 2020', en: '2018 – 2020' }
+      }
+    ],
     skills: [
       {
-        title: { fr: 'Langages', en: 'Languages' },
+        title: { fr: 'IA & robotique', en: 'AI & robotics' },
         items: [
-          { fr: 'Langage A', en: 'Language A' },
-          { fr: 'Langage B', en: 'Language B' }
+          'Python',
+          'PyTorch',
+          { fr: 'Apprentissage par renforcement (Gym)', en: 'Reinforcement learning (Gym)' },
+          { fr: 'Vision par ordinateur (MediaPipe)', en: 'Computer vision (MediaPipe)' },
+          'ROS',
+          'C++',
+          'Arduino',
+          { fr: 'Électronique', en: 'Electronics' },
+          { fr: 'Modélisation 3D (Blender, CAO avec Onshape)', en: '3D modelling (Blender, CAD with Onshape)' }
         ]
       },
       {
-        title: { fr: 'Outils', en: 'Tools' },
+        title: { fr: 'Développement', en: 'Development' },
+        items: ['Java', 'JavaScript', 'HTML / CSS', 'Bootstrap', 'Figma']
+      },
+      {
+        title: { fr: 'Méthodes', en: 'Methods' },
         items: [
-          { fr: 'Outil A', en: 'Tool A' },
-          { fr: 'Outil B', en: 'Tool B' }
+          { fr: 'Gestion de projet (Agile)', en: 'Project management (Agile)' },
+          {
+            fr: 'Documentation technique (Vision & Scope, spécifications)',
+            en: 'Technical documentation (Vision & Scope, specifications)'
+          },
+          { fr: 'Travail en équipe', en: 'Teamwork' }
+        ]
+      },
+      {
+        title: { fr: 'Langues', en: 'Languages' },
+        items: [
+          { fr: 'Français', en: 'French' },
+          { fr: 'Anglais (TOEIC 975/990)', en: 'English (TOEIC 975/990)' }
         ]
       }
     ]

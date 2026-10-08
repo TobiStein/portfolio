@@ -1,6 +1,6 @@
-# Tobi Stein — portfolio
+# Khalissa Rhoulam — portfolio
 
-Portfolio bilingue (français / anglais) de Tobi Stein, construit avec [Astro](https://astro.build) et [UnoCSS](https://unocss.dev). Trois rubriques : **Projets**, **Blog** et **À propos**, chacune disponible en `/fr/` et en `/en/`.
+Portfolio bilingue (français / anglais) de Khalissa Rhoulam, construit avec [Astro](https://astro.build) et [UnoCSS](https://unocss.dev). Trois rubriques : **Projets**, **Blog** et **À propos**, chacune disponible en `/fr/` et en `/en/`.
 
 Le site est entièrement statique : on le construit une fois, puis on publie le dossier `dist` sur n’importe quel hébergeur de fichiers statiques.
 
