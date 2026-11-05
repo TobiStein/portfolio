@@ -22,6 +22,8 @@ import {
   transformerNotationHighlight,
   transformerRemoveNotationEscape
 } from './src/plugins/shiki-official/transformers.ts'
+// Code highlighting with the --code-* colors of the current palette (tokens.css)
+import { paletteTheme } from './src/plugins/shiki-palette-theme.ts'
 // Lazy-load Markdown images
 import rehypeImageAttributes from './src/plugins/rehype-image-attributes.ts'
 import rehypeContentFeatures from './src/plugins/rehype-content-features.ts'
@@ -63,10 +65,7 @@ export default defineConfig({
       rehypePlugins: [rehypeImageAttributes, rehypeKatex, rehypeContentFeatures]
     }),
     shikiConfig: {
-      themes: {
-        light: 'github-light',
-        dark: 'github-dark'
-      },
+      theme: paletteTheme,
       transformers: [
         // Notation: `[!code diff]` / `[!code highlight]` etc.
         // @ts-ignore — multiple copies of @shikijs/types can confuse TS

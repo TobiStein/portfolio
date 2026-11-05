@@ -4,7 +4,7 @@ import type { GetStaticPaths } from 'astro'
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { localeStaticPaths, useTranslations, type Locale } from '@/i18n'
 import { config } from '@/site-config'
-import { socialLinks } from '@/utils'
+import { socialLinks, withBase } from '@/utils'
 
 export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths
 
@@ -25,14 +25,38 @@ const contacts = socialLinks(config.footer.social)
 ---
 
 <BaseLayout lang={lang} title={t('about.title')} description={description}>
-  <div class="animate mx-auto max-w-3xl">
-    <header class="not-prose mb-8 text-center">
-      <h1 class="font-serif text-3xl font-semibold">{t('about.title')}</h1>
+  <div class="mx-auto max-w-3xl" data-thermal-shield>
+    <header class="not-prose mb-8 text-center" data-reveal>
+      {
+        config.site.avatar && (
+          <figure class="avatar">
+            <img
+              src={withBase(config.site.avatar)}
+              alt={config.site.author}
+              width="192"
+              height="192"
+              loading="eager"
+              decoding="async"
+            />
+            <img
+              src={withBase(config.site.avatar)}
+              alt=""
+              width="192"
+              height="192"
+              loading="eager"
+              decoding="async"
+              class="avatar-thermal"
+              aria-hidden="true"
+            />
+          </figure>
+        )
+      }
+      <h1 class="font-display text-3xl">{t('about.title')}</h1>
       {description && <p class="mt-3 text-ink-soft">{description}</p>}
     </header>
 
     <!-- Headings stay direct children of .prose so the typography margins apply -->
-    <div class="prose prose-fill">
+    <div class="prose prose-fill mx-auto">
       {
         bio.length > 0 && (
           <>
@@ -54,13 +78,15 @@ const contacts = socialLinks(config.footer.social)
                 <div class="px-5 py-4">
                   <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
                     <div>
-                      <p class="font-serif font-semibold leading-snug">{pick(item.role)}</p>
+                      <p class="font-semibold leading-snug">{pick(item.role)}</p>
                       <p class="mt-0.5 text-sm text-ink-soft">{item.organization}</p>
                     </div>
-                    <p class="shrink-0 font-mono text-xs text-ink-soft sm:ms-6">{pick(item.date)}</p>
+                    <p class="about-date shrink-0 sm:ms-6">{pick(item.date)}</p>
                   </div>
                   {item.description && (
-                    <p class="mt-3 text-sm leading-relaxed text-ink-soft">{pick(item.description)}</p>
+                    <p class="text-justified mt-3 text-sm leading-relaxed text-ink-soft">
+                      {pick(item.description)}
+                    </p>
                   )}
                 </div>
               ))}
@@ -78,7 +104,7 @@ const contacts = socialLinks(config.footer.social)
               {education.map((item) => (
                 <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between">
                   <div>
-                    <p class="font-serif font-semibold leading-snug">{item.school}</p>
+                    <p class="font-semibold leading-snug">{item.school}</p>
                     {(item.major || item.degree) && (
                       <p class="mt-0.5 text-sm text-ink-soft">
                         {[item.major, item.degree]
@@ -88,7 +114,7 @@ const contacts = socialLinks(config.footer.social)
                       </p>
                     )}
                   </div>
-                  <p class="shrink-0 font-mono text-xs text-ink-soft sm:ms-6">{pick(item.date)}</p>
+                  <p class="about-date shrink-0 sm:ms-6">{pick(item.date)}</p>
                 </div>
               ))}
             </div>
@@ -104,7 +130,7 @@ const contacts = socialLinks(config.footer.social)
             <div class="not-prose flex flex-col gap-5">
               {skills.map((group) => (
                 <div>
-                  <h3 class="mb-2 text-sm font-semibold uppercase tracking-widest text-ink-soft">
+                  <h3 class="mb-2 font-display text-sm uppercase tracking-widest text-meta">
                     {pick(group.title)}
                   </h3>
                   <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-soft">
@@ -148,4 +174,111 @@ const contacts = socialLinks(config.footer.social)
       }
     </div>
   </div>
+
+  <!-- Thermal camera filter: brightness (luminance) → heat scale, set by the script below -->
+  <svg class="absolute size-0" aria-hidden="true" focusable="false">
+    <filter id="thermal-photo" color-interpolation-filters="sRGB">
+      <feColorMatrix
+        type="matrix"
+        values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"
+      />
+      <feComponentTransfer>
+        <feFuncR type="table" />
+        <feFuncG type="table" />
+        <feFuncB type="table" />
+      </feComponentTransfer>
+    </filter>
+  </svg>
 </BaseLayout>
+
+<script>
+  import { readThermalStops } from '@/scripts/thermal/color'
+
+  // The photo is seen "through the thermal camera": the filter maps its brightness
+  // to the heat scale of the current palette and scheme (--thermal-0 … --thermal-10
+  // in tokens.css), read again whenever the palette or the theme changes.
+  const root = document.documentElement
+  const avatar = document.querySelector<HTMLElement>('.avatar')
+  const channels = document.querySelectorAll('#thermal-photo feComponentTransfer > *')
+
+  const paint = () => {
+    const stops = readThermalStops(root)
+    channels.forEach((func, channel) =>
+      func.setAttribute(
+        'tableValues',
+        stops.map((rgb) => (rgb[channel] / 255).toFixed(3)).join(' ')
+      )
+    )
+    avatar?.setAttribute('data-thermal', '')
+  }
+
+  if (avatar && channels.length === 3) {
+    paint()
+    const theme = () => `${root.dataset.palette} ${root.classList.contains('dark')}`
+    let current = theme()
+    new MutationObserver(() => {
+      if (theme() === current) return
+      current = theme()
+      paint()
+    }).observe(root, { attributes: true, attributeFilter: ['class', 'data-palette'] })
+  }
+</script>
+
+<style>
+  /* ---- Photo, centred above the title: seen through the thermal camera,
+     real colours on hover ---- */
+  .avatar {
+    position: relative;
+    width: 9rem;
+    aspect-ratio: 1;
+    margin: 0 auto 1.75rem;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    border: 1px solid hsl(var(--line) / 1);
+    box-shadow: 0 22px 50px -28px hsl(var(--decor) / 0.5);
+  }
+  @media (min-width: 640px) {
+    .avatar {
+      width: 11rem;
+    }
+  }
+  .avatar img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* The thermal layer shows once the script has read the heat scale (real photo
+     without JavaScript) */
+  .avatar-thermal {
+    filter: url(#thermal-photo);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .avatar[data-thermal] .avatar-thermal {
+    opacity: 1;
+  }
+  .avatar[data-thermal]:hover .avatar-thermal {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .avatar-thermal {
+      transition: none;
+    }
+  }
+
+  /* Section titles in the pixel display face, like the other page titles */
+  .prose h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+  /* Dates: pixel face in the information color of the palette (--meta) */
+  .about-date {
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--meta) / 1);
+  }
+</style>

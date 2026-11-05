@@ -1,6 +1,6 @@
 /* ============================================================
-   astro-theme-ink · global styles
-   Base typography, entrance motion, scrollbar, code blocks.
+   Global styles · thermal theme
+   Base typography, opening scan, scrollbar, code blocks.
    ============================================================ */
 
 /* ---- Base ---- */
@@ -11,48 +11,39 @@ html {
 
 body {
   font-family: var(--font-sans);
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Own stacking context: #ambient (z-index: -1) is drawn above the body's
-     paper background but below the content — otherwise the background hides it */
+  /* Own stacking context: the thermal canvas (z-index: -1) is drawn above the
+     body's paper background but below the content */
   isolation: isolate;
 }
 
-/* Visible keyboard focus (accent ring) for accessibility */
+/* Visible keyboard focus (hot ring) for accessibility */
 :focus-visible {
-  outline: 2px solid hsl(var(--accent) / 0.75);
-  outline-offset: 2px;
+  outline: 2px solid hsl(var(--ring) / 0.85);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
-/* Soft aurora at the top of every page — palette-aware via tokens */
-#ambient {
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 24rem;
-  pointer-events: none;
-  z-index: -1;
-  background:
-    radial-gradient(55% 55% at 12% 0%, hsl(var(--accent-vivid) / 0.14), transparent 65%),
-    radial-gradient(45% 45% at 88% 2%, hsl(var(--accent-2) / 0.14), transparent 65%),
-    radial-gradient(38% 38% at 52% 0%, hsl(var(--wash) / 0.7), transparent 72%);
-}
-
-/* ---- Entrance motion (staggered by page author) ---- */
-@keyframes fade-up {
+/* ---- Opening scan (first page of a visit, see BaseLayout) ----
+   Blocks marked [data-reveal] appear as the sensor line sweeps the screen;
+   the canvas script syncs them with its scan line. Without the script,
+   this fallback reveals them anyway. */
+@keyframes thermal-reveal {
+  /* negative side insets: never clip text that overflows its box */
   from {
-    transform: translateY(0.9rem);
-    opacity: 0;
+    clip-path: inset(-2rem -100vw 100% -100vw);
+    opacity: 0.35;
   }
   to {
-    transform: translateY(0);
+    clip-path: inset(-2rem -100vw -2rem -100vw);
     opacity: 1;
   }
 }
 
-.animate {
-  opacity: 0;
-  animation: fade-up 420ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+html[data-thermal-boot='1'] [data-reveal] {
+  animation: thermal-reveal 0.6s linear 1.9s both;
 }
 
 /* Brief transition when toggling the color theme */
@@ -71,13 +62,12 @@ html.theme-switching *::after {
   html {
     scroll-behavior: auto;
   }
-  .animate {
+  html[data-thermal-boot] [data-reveal] {
     animation: none;
-    opacity: 1;
   }
 }
 
-/* ---- Scrollbar: quiet, warm ---- */
+/* ---- Scrollbar: cold at rest, warms up on hover ---- */
 :not(html) ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -87,7 +77,7 @@ html.theme-switching *::after {
   border-radius: 999px;
 }
 :not(html) ::-webkit-scrollbar-thumb:hover {
-  background-color: hsl(var(--accent) / 0.5);
+  background-color: hsl(var(--decor) / 0.6);
 }
 
 /* ============================================================
@@ -156,9 +146,6 @@ html.theme-switching *::after {
       }
     }
   }
-}
-html.dark .astro-code pre span {
-  color: var(--shiki-dark) !important;
 }
 
 /* Title (from ```lang title="..." ) */
@@ -265,20 +252,20 @@ html.dark .astro-code pre span {
   }
   & .highlighted,
   & .highlighted::before {
-    background-color: rgba(149, 166, 183, 0.32) !important;
+    background-color: var(--code-highlight) !important;
   }
   & .diff {
     &.remove {
-      background-color: rgba(244, 63, 94, 0.16);
+      background-color: var(--code-diff-remove);
       &::before {
-        background-color: rgba(244, 63, 94, 0.16);
+        background-color: var(--code-diff-remove);
         content: '-';
       }
     }
     &.add {
-      background-color: rgba(16, 185, 129, 0.16);
+      background-color: var(--code-diff-add);
       &::before {
-        background-color: rgba(16, 185, 129, 0.16);
+        background-color: var(--code-diff-add);
         content: '+';
       }
     }
@@ -365,11 +352,10 @@ hr {
 
 .prose.prose-fill {
   width: 100%;
-  max-width: 45rem;
-  margin-inline: auto;
+  max-width: 46rem;
 }
 
-/* Highlighted text (<mark>) */
+/* Highlighted text (<mark>): the glow (fire: blue frost, gold; abyss: the amber spark) */
 mark {
   background-color: hsl(var(--glow) / 0.35);
   color: inherit;
@@ -377,9 +363,26 @@ mark {
   padding-inline: 0.1em;
 }
 
+/* Text blocks: justified, with hyphenation (page language) so word spacing
+   stays even, also on narrow screens. Prose paragraphs get the same rule
+   in uno.config.ts. */
+.text-justified {
+  text-align: justify;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+/* Display text: the pixel face (name, page titles, short labels) */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
 /* ---- Print ---- */
 @media print {
-  #ambient,
+  #thermal-field,
   .site-header,
   .mobile-nav,
   footer,
@@ -392,9 +395,24 @@ mark {
   .collapse-fade {
     display: none !important;
   }
+  /* Black on white whatever the palette and scheme (--print-* in tokens.css) */
+  :root {
+    --paper: var(--print-paper) !important;
+    --card: var(--print-paper) !important;
+    --ink: var(--print-ink) !important;
+    --ink-soft: var(--print-ink-soft) !important;
+    --line: var(--print-line) !important;
+    --wash: var(--print-wash) !important;
+  }
+  /* Dark accents are made for a dark page: on paper they print in ink */
+  .dark {
+    --accent: var(--print-ink) !important;
+    --accent-2: var(--print-ink-soft) !important;
+    --accent-fg: var(--print-paper) !important;
+  }
   body {
-    background: #fff !important;
-    color: #000 !important;
+    background: hsl(var(--print-paper) / 1) !important;
+    color: hsl(var(--print-ink) / 1) !important;
   }
   .prose {
     font-size: 12pt;
@@ -407,12 +425,16 @@ mark {
   }
   .astro-code {
     box-shadow: none;
-    border-color: #ccc;
-    background-color: #f7f7f7 !important;
+    border-color: hsl(var(--print-line) / 1);
+    background-color: hsl(var(--print-wash) / 1) !important;
   }
   .astro-code code {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+  }
+  /* Syntax colors are made for the screen background: code prints in ink */
+  .astro-code pre span {
+    color: hsl(var(--print-ink) / 1) !important;
   }
   img {
     max-width: 100% !important;
@@ -443,4 +465,8 @@ mark {
 .prose svg {
   max-width: 100%;
   height: auto;
+}
+/* Labels are measured outside .prose: keep the same spacing so they are not clipped */
+.prose svg[id^='mermaid'] {
+  letter-spacing: normal;
 }

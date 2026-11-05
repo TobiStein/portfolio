@@ -1,67 +1,293 @@
 /* ============================================================
-   astro-theme-ink · design tokens
-   Palette "abysse": deep blue-green, periwinkle & amber glow, with a
-   light variant (:root) and a dark variant (.dark, toggled in the header).
-   All colors are HSL triplets consumed through the CSS variables below
-   and mapped to UnoCSS colors in uno.config.ts (text-accent, bg-glow/35…).
+   Design tokens · the site's only source of colors and fonts
+   Every color used by the site (components, code blocks, ASCII
+   background, photo filter, print, browser chrome) is defined here.
+
+   Two palettes, each with a light and a dark variant:
+   - fire (default): the thermal camera. Light « givre »: white and pale
+     blue, indigo, rose accent. Dark « braise »: no cold hue at all,
+     red-black night, peach, gold accent. Rules: charter « Palette Fire ».
+   - abyss: the deep-sea palette of the previous version of the site,
+     blue-green first, periwinkle as an echo, one amber spark. Rules:
+     charter « Palette Abysse »; its heat scale and code colors are mixes
+     of its own colors (no new hue).
+   The header button switches palette (stored in localStorage), the
+   theme button switches system / light / dark; `site.palette` and
+   `site.theme` in src/site-config.ts set the defaults.
+
+   Selectors: fire light `:root, [data-palette='fire']` (also the default),
+   fire dark `.dark`, abyss light `[data-palette='abyss']`, abyss dark
+   `[data-palette='abyss'].dark`; tokens shared by all palettes are in the
+   plain `:root` blocks at the end. Keep this order: a palette's blocks
+   come after the fire blocks.
+   Every palette's light block declares the same tokens; a dark block only
+   lists what changes in dark (tokens written with var() follow the scheme
+   on their own). Checked by tests/tokens.test.mjs. A new palette also
+   needs its name in PALETTES (src/utils/theme.ts).
+
+   Three kinds of tokens:
+   - base colors (--paper … --glow): HSL triplets, used as
+     `hsl(var(--x) / alpha)` and mapped to UnoCSS colors in uno.config.ts
+     (text-accent, bg-glow/35…);
+   - roles (--secondary … --code-highlight): which base color each part of
+     the site takes in this palette, so components never pick a palette
+     color themselves (fire: 70:20:10; abyss: blue-green first);
+   - heat scale and code colors: complete CSS colors.
+   --thermal-0 … --thermal-10 is the heat scale, coldest to hottest: ASCII
+   background, reading progress bar, Mermaid diagrams, About photo.
+   --code-* color the syntax highlighting (src/plugins/shiki-palette-theme.ts).
    ============================================================ */
 
-/* ---- Palette: abysse · light ---- */
-:root {
+/* ---- Palette fire · light (givre) ---- */
+:root,
+[data-palette='fire'] {
   color-scheme: light;
 
-  --paper: 220 45% 97%;
-  --card: 220 60% 99%;
-  --ink: 230 48% 16%;
-  --ink-soft: 228 16% 40%;
-  --wash: 196 50% 92%;
-  --accent: 184 88% 25%;
-  --ring: 184 88% 25%;
-  --line: 214 32% 86%;
-  --accent-vivid: 180 70% 45%;
-  --accent-fg: 220 60% 99%;
-  --accent-2: 236 52% 52%;
-  --glow: 36 95% 62%;
+  --paper: 225 67% 98%; /* frost white */
+  --card: 240 100% 99.6%;
+  --ink: 247 36% 14%; /* indigo black */
+  --ink-soft: 238 13% 38%;
+  --wash: 226 63% 95%; /* pale blue wash */
+  --line: 228 49% 90%;
+  --accent: 328 66% 46%; /* rose (10 %): actions, hover, focus */
+  --ring: 328 66% 46%;
+  --accent-vivid: 332 78% 58%; /* decor only (never text) */
+  --accent-fg: 0 0% 100%; /* text on a solid accent */
+  --accent-2: 235 50% 50%; /* indigo (20 %): tagline, tags, dates */
+  --glow: 220 80% 75%; /* blue: text selection and highlights */
+
+  /* Image viewer (same in light and dark): the night page and its ink */
+  --overlay: 351 48% 5%;
+  --overlay-fg: 35 100% 94%;
+
+  /* Roles (70:20:10): the secondary color carries information and decor */
+  --secondary: var(--accent-2); /* tags, chips, active TOC entry, page arrows */
+  --meta: var(--accent-2); /* tagline, dates, counts, small labels */
+  --decor: var(--accent-2); /* glows and shadows, card hover, list markers */
+  --hover-ink: var(--ink); /* nav links and icon buttons on hover */
+  --link-underline: hsl(var(--accent-2) / 0.45);
+  --selection: hsl(var(--glow) / 0.32);
+  --quote-rule: linear-gradient(to bottom, var(--thermal-8), var(--thermal-6), var(--thermal-3));
+  --diagram-border: var(--thermal-7); /* Mermaid: node borders and arrows */
+  --diagram-line: var(--thermal-6);
+  --thermal-gradient: linear-gradient(
+    90deg,
+    var(--thermal-1),
+    var(--thermal-3),
+    var(--thermal-5),
+    var(--thermal-7),
+    var(--thermal-8),
+    var(--thermal-9),
+    var(--thermal-10)
+  );
+
+  /* Heat scale: ice, blue, indigo, violet, then rose only for the hottest
+     band (the butterfly's core), and indigo black */
+  --thermal-0: #eef2fc;
+  --thermal-1: #dce6fa;
+  --thermal-2: #bed3f6;
+  --thermal-3: #96b6f0;
+  --thermal-4: #6f93e6;
+  --thermal-5: #5674d9;
+  --thermal-6: #5f5bcf;
+  --thermal-7: #6f4ac6;
+  --thermal-8: #8a42bb;
+  --thermal-9: #c23a8c;
+  --thermal-10: #22143a;
+
+  /* Code: indigo ink, blue keywords, plum strings, rose only for numbers */
+  --code-fg: #1f1d3a;
+  --code-comment: #646581;
+  --code-keyword: #3f49bf;
+  --code-string: #6e1a59;
+  --code-number: #b8306f;
+  --code-func: #2f62c9;
+  --code-type: #6a44c2;
+  --code-variable: #1f1d3a;
+  --code-property: #3a56b8;
+  --code-punctuation: #5e6080;
+  --code-tag: #3f49bf;
+  --code-attribute: #6a44c2;
+  --code-inserted: #2f62c9;
+  --code-deleted: #b8306f;
+  --code-diff-add: hsl(220 80% 55% / 0.14);
+  --code-diff-remove: hsl(330 70% 50% / 0.14);
+  --code-highlight: hsl(var(--accent-2) / 0.12);
 }
 
-/* ---- Palette: abysse · dark ---- */
+/* ---- Palette fire · dark (braise) ---- */
 .dark {
   color-scheme: dark;
 
-  --paper: 228 48% 8%;
+  --paper: 351 48% 5%; /* red-black night */
+  --card: 347 47% 7%;
+  --ink: 35 100% 94%; /* white-hot cream */
+  --ink-soft: 25 35% 70%; /* warm ash */
+  --wash: 351 38% 10%;
+  --line: 348 44% 16%;
+  --accent: 36 100% 71%; /* gold (10 %): actions, hover, focus */
+  --ring: 36 100% 71%;
+  --accent-vivid: 33 100% 65%; /* amber, decor only */
+  --accent-fg: 354 58% 6%;
+  --accent-2: 20 82% 72%; /* peach (20 %): tagline, tags, dates */
+  --glow: 35 100% 72%; /* gold: text selection and highlights */
+
+  --thermal-0: #1e0a0d;
+  --thermal-1: #300d14;
+  --thermal-2: #4c111c;
+  --thermal-3: #721727;
+  --thermal-4: #a01f33;
+  --thermal-5: #cf2f45;
+  --thermal-6: #ee4f62;
+  --thermal-7: #ff7a6e;
+  --thermal-8: #ffa36e;
+  --thermal-9: #ffcc86;
+  --thermal-10: #fff0d2;
+
+  /* Code: no cold hue, coral keywords, gold strings, orange numbers */
+  --code-fg: #f6dfcf;
+  --code-comment: #a7786e;
+  --code-keyword: #ff7088;
+  --code-string: #ffc27a;
+  --code-number: #ff9a6b;
+  --code-func: #ffb4a2;
+  --code-type: #ffd9a0;
+  --code-variable: #fff1de;
+  --code-property: #f5a97f;
+  --code-punctuation: #c99387;
+  --code-tag: #ff7088;
+  --code-attribute: #ffb070;
+  --code-inserted: #ffc27a;
+  --code-deleted: #ff7088;
+  --code-diff-add: hsl(38 100% 60% / 0.16);
+  --code-diff-remove: hsl(350 100% 65% / 0.18);
+}
+
+/* ---- Palette abyss · light (values of the charter « Palette Abysse ») ---- */
+[data-palette='abyss'] {
+  color-scheme: light;
+
+  --paper: 220 45% 97%; /* pearl white */
+  --card: 220 60% 99%;
+  --ink: 230 48% 16%; /* night indigo */
+  --ink-soft: 228 16% 40%;
+  --wash: 196 50% 92%; /* water-tinted */
+  --line: 214 32% 86%;
+  --accent: 184 88% 25%; /* blue-green, the identity: text and hover */
+  --ring: 184 88% 25%;
+  --accent-vivid: 180 70% 45%; /* bright turquoise: decor only */
+  --accent-fg: 220 60% 99%;
+  --accent-2: 236 52% 52%; /* periwinkle: an echo, never as much as the blue-green */
+  --glow: 36 95% 62%; /* amber: one spark per screen */
+
+  /* Image viewer: the palette's night page and its pearl white */
+  --overlay: 228 48% 8%;
+  --overlay-fg: 220 60% 99%;
+
+  /* Roles: blue-green first, periwinkle as an echo, vivid only for decor */
+  --secondary: var(--accent); /* tags in blue-green */
+  --meta: var(--ink-soft); /* secondary information steps back */
+  --decor: var(--accent-vivid);
+  --hover-ink: var(--accent);
+  --link-underline: hsl(var(--accent-vivid) / 0.6);
+  --selection: hsl(var(--accent-vivid) / 0.25);
+  --quote-rule: linear-gradient(hsl(var(--accent-2) / 0.55), hsl(var(--accent-2) / 0.55));
+  --thermal-gradient: linear-gradient(
+    90deg,
+    var(--thermal-3),
+    var(--thermal-5),
+    var(--thermal-7),
+    var(--thermal-8)
+  );
+
+  /* Heat scale: the palette's own colors, from the page to the ink, the
+     turquoise at growing opacity on the water tint; the amber glow is only
+     the hottest point (the butterfly's thorax). Same recipe in dark. */
+  --thermal-0: hsl(var(--paper));
+  --thermal-1: hsl(var(--wash));
+  --thermal-2: color-mix(in srgb, hsl(var(--accent-vivid)) 25%, hsl(var(--wash)));
+  --thermal-3: color-mix(in srgb, hsl(var(--accent-vivid)) 50%, hsl(var(--wash)));
+  --thermal-4: color-mix(in srgb, hsl(var(--accent-vivid)) 75%, hsl(var(--wash)));
+  --thermal-5: hsl(var(--accent-vivid));
+  --thermal-6: color-mix(in srgb, hsl(var(--accent)) 50%, hsl(var(--accent-vivid)));
+  --thermal-7: hsl(var(--accent));
+  --thermal-8: hsl(var(--accent-2));
+  --thermal-9: hsl(var(--ink));
+  --thermal-10: hsl(var(--glow));
+
+  /* Diagrams (Mermaid): node borders and arrows stay readable on the page */
+  --diagram-border: hsl(var(--accent));
+  --diagram-line: hsl(var(--accent));
+
+  /* Code: blue-green keywords, periwinkle strings and types, no amber */
+  --code-fg: hsl(var(--ink));
+  --code-comment: hsl(var(--ink-soft));
+  --code-keyword: hsl(var(--accent));
+  --code-string: hsl(var(--accent-2));
+  --code-number: hsl(var(--accent));
+  --code-func: hsl(var(--ink));
+  --code-type: hsl(var(--accent-2));
+  --code-variable: hsl(var(--ink));
+  --code-property: hsl(var(--ink));
+  --code-punctuation: hsl(var(--ink-soft));
+  --code-tag: hsl(var(--accent));
+  --code-attribute: hsl(var(--accent-2));
+  --code-inserted: hsl(var(--accent));
+  --code-deleted: hsl(var(--ink-soft));
+  --code-diff-add: hsl(var(--accent) / 0.14);
+  --code-diff-remove: hsl(var(--ink-soft) / 0.16);
+  --code-highlight: hsl(var(--accent) / 0.1);
+}
+
+/* ---- Palette abyss · dark ---- */
+[data-palette='abyss'].dark {
+  color-scheme: dark;
+
+  --paper: 228 48% 8%; /* deep-sea night */
   --card: 226 40% 12%;
-  --ink: 34 55% 92%;
+  --ink: 34 55% 92%; /* peach cream */
   --ink-soft: 222 22% 72%;
   --wash: 220 38% 16%;
+  --line: 222 30% 23%;
   --accent: 178 62% 56%;
   --ring: 178 62% 56%;
-  --line: 222 30% 23%;
   --accent-vivid: 176 75% 62%;
   --accent-fg: 228 48% 8%;
   --accent-2: 234 85% 78%;
   --glow: 38 95% 66%;
 }
 
-/* ---- Shape & type (shared) ---- */
+/* ---- Shared: shape, type, print ---- */
 :root {
   --radius: 0.5rem;
 
-  --font-serif:
-    'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', 'Noto Serif SC',
-    'Songti SC', 'SimSun', serif;
+  /* Geist Pixel (name, titles, short labels), Mona Sans (text, long titles)
+     and Monaspace Neon (ASCII field, code), self-hosted via Fontsource.
+     The ASCII background and Mermaid diagrams read these variables too. */
+  --font-display:
+    'Geist Pixel Variable', 'Monaspace Neon', ui-monospace, 'SF Mono', Consolas, monospace;
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+    'Mona Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
   --font-mono:
-    ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, 'Liberation Mono',
+    'Monaspace Neon', ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono',
     monospace;
+  /* Kept for older components: the theme no longer uses a serif. */
+  --font-serif: var(--font-sans);
+
+  /* Printed pages: black on white, whatever the palette (global.css, @media print) */
+  --print-paper: 0 0% 100%;
+  --print-ink: 0 0% 0%;
+  --print-ink-soft: 0 0% 28%;
+  --print-line: 0 0% 80%;
+  --print-wash: 0 0% 97%;
 }
 
 :root {
   --un-default-border-color: hsl(var(--line) / 1);
 }
 
-/* Selection: ink on accent */
+/* Selection: blue frost and gold (fire), turquoise (abyss) */
 ::selection {
-  background-color: hsl(var(--accent-vivid) / 0.25);
+  background-color: var(--selection);
 }

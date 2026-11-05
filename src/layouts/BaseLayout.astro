@@ -1,12 +1,24 @@
 ---
 import '@unocss/reset/tailwind.css'
+// Self-hosted fonts: Geist Pixel (name & titles), Mona Sans (text), Monaspace Neon (ASCII & code)
+import '@fontsource-variable/geist-pixel/index.css'
+import '@fontsource-variable/mona-sans/index.css'
+import '@fontsource-variable/mona-sans/wght-italic.css'
+import '@fontsource/monaspace-neon/400.css'
+import '@fontsource/monaspace-neon/600.css'
+import pixelLatin from '@fontsource-variable/geist-pixel/files/geist-pixel-latin-elsh-normal.woff2?url'
+import monaLatin from '@fontsource-variable/mona-sans/files/mona-sans-latin-wght-normal.woff2?url'
+import monoLatin from '@fontsource/monaspace-neon/files/monaspace-neon-latin-400-normal.woff2?url'
 import '@/assets/styles/tokens.css'
 import '@/assets/styles/global.css'
+// The same file as text: the page color of each palette is read from it
+import tokensCss from '@/assets/styles/tokens.css?raw'
 
 import BackToTop from '@/components/BackToTop.astro'
 import Footer from '@/components/Footer.astro'
 import Header from '@/components/Header.astro'
 import Lightbox from '@/components/Lightbox.astro'
+import ThermalField from '@/components/ThermalField.astro'
 import {
   DEFAULT_LOCALE,
   LOCALE_META,
@@ -21,7 +33,7 @@ import {
 import { config } from '@/site-config'
 import themeScript from '@/scripts/theme.js?raw'
 import { withBase } from '@/utils'
-import { THEME_COLORS, themeColorHex } from '@/utils/theme'
+import { pageColors, themeAttributes } from '@/utils/theme'
 
 interface Props {
   /** Language of the page */
@@ -92,15 +104,23 @@ const switchHref = alternates[target] ?? localePath(target, fallbackPath)
 // Code-block button labels are added in English at build time by the Shiki
 // transformers; they are localized on load (visible labels: see global.css).
 const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
+
+// Page color of every palette and scheme (data-bg-<palette>-<scheme>), painted by
+// the theme script before the stylesheet loads and used as the browser chrome color.
+// data-palette starts at the configured palette (colors without JavaScript); the
+// theme script replaces it with the visitor's choice.
+const themeColors = themeAttributes(tokensCss)
+const defaultChrome = pageColors(tokensCss)[config.site.palette].light
 ---
 
 <!doctype html>
 <html
   lang={lang}
   class="scroll-smooth"
-  data-bg-light={THEME_COLORS.light}
-  data-bg-dark={THEME_COLORS.dark}
+  {...themeColors}
   data-default-theme={config.site.theme}
+  data-default-palette={config.site.palette}
+  data-palette={config.site.palette}
 >
   <head>
     <meta charset="utf-8" />
@@ -126,7 +146,10 @@ const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
       title={config.site.title}
       href={localePath(lang, '/rss.xml')}
     />
-    <meta name="theme-color" content={themeColorHex(false)} />
+    <meta name="theme-color" content={defaultChrome} />
+    <link rel="preload" href={pixelLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={monaLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={monoLatin} as="font" type="font/woff2" crossorigin />
     {stylesheets.map((href) => <link rel="stylesheet" href={href} />)}
 
     {noindex && <meta name="robots" content="noindex, nofollow" />}
@@ -155,13 +178,26 @@ const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
 
     <!-- Theme controller: first paint, toggle clicks and OS changes -->
     <script is:inline set:html={themeScript} />
+    <!-- First page of the visit: the thermal background opens with a sensor scan -->
+    <script is:inline>
+      try {
+        if (
+          !sessionStorage.getItem('thermal-booted') &&
+          !matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+          document.documentElement.dataset.thermalBoot = '1'
+        }
+      } catch {
+        // Storage unavailable: no opening scan.
+      }
+    </script>
   </head>
 
   <body
     class="relative min-h-dvh bg-paper font-sans text-ink transition-colors duration-300"
     data-astro-page
   >
-    <div id="ambient" aria-hidden="true"></div>
+    <ThermalField />
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:border-accent focus:bg-card focus:px-3 focus:py-2"
@@ -171,8 +207,8 @@ const codeLabels = { copy: t('code.copy'), toggle: t('code.toggle') }
 
     <div class="flex min-h-dvh flex-col">
       <Header lang={lang} switchHref={switchHref} />
-      <div class="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 sm:px-8">
-        <main id="main" class="flex-1 py-10">
+      <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 sm:px-8">
+        <main id="main" class="flex-1 pb-16 pt-8 sm:pt-12">
           <slot />
         </main>
         <Footer lang={lang} />
