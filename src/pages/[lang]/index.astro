@@ -5,7 +5,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro'
 import EntryCard from '@/components/EntryCard.astro'
 import { localePath, localeStaticPaths, useTranslations, type Locale } from '@/i18n'
 import { config } from '@/site-config'
-import { socialLinks, withBase } from '@/utils'
+import { socialLinks } from '@/utils'
 import { getPosts, getProjects } from '@/utils/server'
 
 export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths
@@ -25,102 +25,84 @@ const summary = hero.summary ? pick(hero.summary).trim() : ''
 const firstParagraph = pick(config.about.bio).trim().split(/\n\s*\n/)[0] ?? ''
 const introduction = summary || firstParagraph.trim()
 
+// "A · B · C" in the config reads as a sentence here: "A, b, c"
+// (words written in capitals, like "IA" or "ROS", keep their case)
+const fields = tagline
+  .split(/\s*[·•|]\s*/)
+  .filter(Boolean)
+  .map((field, index) =>
+    index > 0 && /^\p{Lu}\p{Ll}/u.test(field) ? field[0].toLocaleLowerCase(lang) + field.slice(1) : field
+  )
+const taglineSentence = fields.join(', ')
+
 const projects = recentProjects > 0 ? (await getProjects(lang)).slice(0, recentProjects) : []
 const posts = recentPosts > 0 ? (await getPosts(lang)).slice(0, recentPosts) : []
 const social = socialLinks(config.footer.social)
 ---
 
 <BaseLayout lang={lang}>
-  <div class="mx-auto max-w-[47.5rem]">
-    <!-- Hero -->
-    <div id="content-header" class="animate not-prose mb-12 border-b border-line pb-10">
-      <div class="flex items-center gap-4 sm:gap-5">
-        {
-          config.site.avatar && (
-            <img
-              src={withBase(config.site.avatar)}
-              alt={config.site.author}
-              width="72"
-              height="72"
-              loading="eager"
-              decoding="async"
-              class="size-16 shrink-0 rounded-full border border-line object-cover sm:size-18"
-            />
-          )
-        }
-        <div class="min-w-0">
-          <h1 class="font-serif text-3xl font-semibold leading-tight text-ink sm:text-4xl">
-            {config.site.author}
-          </h1>
-          {
-            tagline && (
-              <p class="mt-2 text-xs leading-relaxed tracking-wide text-ink-soft sm:text-sm">
-                {tagline}
-              </p>
-            )
-          }
-        </div>
-      </div>
-
+  <!-- Hero: the name on the left, the thermal butterfly on the right -->
+  <section class="hero not-prose" aria-labelledby="hero-name">
+    <div class="hero-copy" data-thermal-shield data-reveal>
+      <h1 id="hero-name" class="hero-name">{config.site.author}</h1>
+      {taglineSentence && <p class="hero-fields">{taglineSentence}</p>}
       {
         introduction && (
-          <div class="mt-5 max-w-2xl space-y-3 text-base leading-relaxed text-ink-soft">
-            {introduction
-              .split(/\n\s*\n/)
-              .filter(Boolean)
-              .map((paragraph) => (
-                <p>{paragraph}</p>
-              ))}
-          </div>
+          <p class="hero-summary text-justified">{introduction.split(/\n\s*\n/)[0]}</p>
         )
       }
 
-      <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        {
-          place && (
-            <span class="inline-flex items-center gap-1 text-sm text-ink-soft">
-              <span class="i-lucide-map-pin size-3.5" aria-hidden="true" />
-              {place}
-            </span>
-          )
-        }
-        {
-          social.map((item) => {
-            const external = !item.url.startsWith('mailto:')
-            return (
-              <a
-                href={item.url}
-                target={external ? '_blank' : undefined}
-                rel={external ? 'noreferrer' : undefined}
-                aria-label={item.label}
-                title={item.label}
-                class="icon-link size-9"
-              >
-                <span class={`${item.icon} size-4`} aria-hidden="true" />
-              </a>
-            )
-          })
-        }
-        <a
-          href={localePath(lang, '/about')}
-          class="link-ink inline-flex min-h-9 items-center text-sm"
-          data-astro-prefetch
-        >
+      <div class="hero-actions">
+        <a href={localePath(lang, '/projects')} class="btn-hot" data-astro-prefetch>
+          {t('home.cta')}
+          <span class="i-lucide-arrow-right size-4" aria-hidden="true"></span>
+        </a>
+        <a href={localePath(lang, '/about')} class="link-ink text-[0.95rem] font-medium" data-astro-prefetch>
           {t('home.moreAbout')}
         </a>
       </div>
+
+      {
+        (place || social.length > 0) && (
+          <div class="hero-meta">
+            {place && (
+              <span class="inline-flex items-center gap-1.5">
+                <span class="i-lucide-map-pin size-3.5" aria-hidden="true" />
+                {place}
+              </span>
+            )}
+            {social.map((item) => {
+              const external = !item.url.startsWith('mailto:')
+              return (
+                <a
+                  href={item.url}
+                  target={external ? '_blank' : undefined}
+                  rel={external ? 'noreferrer' : undefined}
+                  aria-label={item.label}
+                  title={item.label}
+                  class="icon-link size-9"
+                >
+                  <span class={`${item.icon} size-4`} aria-hidden="true" />
+                </a>
+              )
+            })}
+          </div>
+        )
+      }
     </div>
 
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hero-butterfly" data-butterfly></div>
+    </div>
+  </section>
+
+  <div class="home-sections">
     <!-- Recent projects -->
     {
       projects.length > 0 && (
-        <section
-          aria-labelledby="home-projects"
-          class="animate not-prose mb-16"
-          style="animation-delay: 60ms"
-        >
-          <div class="mb-5 flex items-end justify-between gap-4">
-            <h2 id="home-projects" class="font-serif text-xl font-normal">
+        <section aria-labelledby="home-projects" class="home-section not-prose" data-thermal-shield>
+          <div class="section-head">
+            <h2 id="home-projects" class="section-title">
               {t('home.projects')}
             </h2>
             <a href={localePath(lang, '/projects')} class="link-ink text-sm" data-astro-prefetch>
@@ -139,13 +121,9 @@ const social = socialLinks(config.footer.social)
     <!-- Recent posts -->
     {
       posts.length > 0 && (
-        <section
-          aria-labelledby="home-posts"
-          class="animate not-prose mb-16"
-          style="animation-delay: 120ms"
-        >
-          <div class="mb-5 flex items-end justify-between gap-4">
-            <h2 id="home-posts" class="font-serif text-xl font-normal">
+        <section aria-labelledby="home-posts" class="home-section not-prose" data-thermal-shield>
+          <div class="section-head">
+            <h2 id="home-posts" class="section-title">
               {t('home.posts')}
             </h2>
             <a href={localePath(lang, '/blog')} class="link-ink text-sm" data-astro-prefetch>
@@ -162,3 +140,110 @@ const social = socialLinks(config.footer.social)
     }
   </div>
 </BaseLayout>
+
+<style>
+  .hero {
+    display: grid;
+    align-items: center;
+    gap: 1.5rem;
+    padding-block: 0.5rem 3.5rem;
+  }
+  @media (min-width: 1024px) {
+    .hero {
+      grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+      gap: 3.5rem;
+      min-height: min(calc(100svh - 10rem), 46rem);
+      padding-block: 0 5rem;
+    }
+  }
+
+  /* ---- Copy ---- */
+  .hero-copy {
+    position: relative;
+    max-width: 34rem;
+  }
+  /* The name: pixel display face, on one line */
+  .hero-name {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2.1rem, 1.55rem + 2.3vw, 3.3rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    color: hsl(var(--ink) / 1);
+  }
+  .hero-fields {
+    margin-top: 1rem;
+    font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    color: hsl(var(--meta) / 1);
+  }
+  .hero-summary {
+    margin-top: 0.85rem;
+    max-width: 31rem;
+    font-size: 1.075rem;
+    line-height: 1.65;
+    color: hsl(var(--ink-soft) / 1);
+  }
+  .hero-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+  }
+  .hero-meta {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1rem;
+    font-size: 0.875rem;
+    color: hsl(var(--ink-soft) / 1);
+  }
+
+  /* ---- Butterfly box: the canvas draws the butterfly inside it ---- */
+  .hero-visual {
+    position: relative;
+    order: -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-butterfly {
+    width: min(100%, 26rem);
+    aspect-ratio: 6 / 5;
+  }
+  @media (min-width: 1024px) {
+    .hero-visual {
+      order: 0;
+      align-items: flex-end;
+      transform: translateY(-1.5rem);
+    }
+    .hero-butterfly {
+      width: min(100%, 37rem);
+    }
+  }
+
+  /* ---- Sections below the hero: same width as the hero (name + butterfly) ---- */
+  .home-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 4.5rem;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid hsl(var(--line) / 1);
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+</style>

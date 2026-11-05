@@ -1,28 +1,79 @@
 <script>
+  import { parseColor } from '@/scripts/thermal/color'
+
   // Render ```mermaid fenced blocks to diagrams on the client.
   // The mermaid chunk is only loaded when a diagram actually exists on the
   // page, so articles without diagrams pay no cost.
   const blocks = document.querySelectorAll<HTMLElement>('.prose [data-language="mermaid"]')
   if (blocks.length > 0) {
     const { default: mermaid } = await import('mermaid')
-    mermaid.initialize({
-      startOnLoad: false,
-      securityLevel: 'strict',
-      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default'
+    const root = document.documentElement
+
+    // `data-language` sits on the Shiki wrapper (div.astro-code > pre > code):
+    // the whole wrapper is replaced by a box that keeps the diagram source
+    const diagrams = Array.from(blocks).flatMap((block) => {
+      const wrapper = block.closest('.astro-code') ?? block.closest('pre')
+      const source = (block.querySelector('code')?.textContent ?? block.textContent ?? '').trim()
+      if (!wrapper || !source) return []
+      return [{ wrapper, source, box: null as HTMLElement | null }]
     })
-    blocks.forEach((code, i) => {
-      const pre = code.closest('pre')
-      const source = (code.textContent ?? '').trim()
-      if (!pre || !source) return
-      mermaid
-        .render(`mermaid-${i}`, source)
-        .then(({ svg }) => {
-          pre.outerHTML = svg
-        })
-        .catch((err) => {
-          // keep the code block as-is and surface the error in the console
-          console.error('[mermaid] render failed:', err)
-        })
-    })
+
+    let pass = 0
+    const render = () => {
+      // Diagrams follow the heat scale, the ink and the text font of the current
+      // palette (tokens.css). Mermaid computes shades from its colors: give it hex
+      // (the tokens may use hsl() or color-mix()).
+      const style = getComputedStyle(root)
+      const token = (name: string) => style.getPropertyValue(name).trim()
+      const hex = (color: string) => {
+        const rgb = parseColor(color)
+        return rgb ? `#${rgb.map((c) => c.toString(16).padStart(2, '0')).join('')}` : color
+      }
+      const heat = (step: number) => hex(token(`--thermal-${step}`))
+      const ink = hex(`hsl(${token('--ink')})`)
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: 'base',
+        themeVariables: {
+          darkMode: root.classList.contains('dark'),
+          fontFamily: token('--font-sans'),
+          primaryColor: heat(1),
+          primaryBorderColor: hex(token('--diagram-border')),
+          primaryTextColor: ink,
+          secondaryColor: heat(2),
+          tertiaryColor: heat(0),
+          lineColor: hex(token('--diagram-line')),
+          textColor: ink
+        }
+      })
+      pass++
+      diagrams.forEach((diagram, i) => {
+        mermaid
+          .render(`mermaid-${i}-${pass}`, diagram.source)
+          .then(({ svg }) => {
+            if (!diagram.box) {
+              diagram.box = document.createElement('div')
+              diagram.box.className = 'mermaid-diagram'
+              diagram.wrapper.replaceWith(diagram.box)
+            }
+            diagram.box.innerHTML = svg
+          })
+          .catch((err) => {
+            // keep the code block as-is and surface the error in the console
+            console.error('[mermaid] render failed:', err)
+          })
+      })
+    }
+    render()
+
+    // Theme or palette switch: draw the diagrams again with the new colors
+    const theme = () => `${root.dataset.palette} ${root.classList.contains('dark')}`
+    let current = theme()
+    new MutationObserver(() => {
+      if (theme() === current) return
+      current = theme()
+      render()
+    }).observe(root, { attributes: true, attributeFilter: ['class', 'data-palette'] })
   }
 </script>

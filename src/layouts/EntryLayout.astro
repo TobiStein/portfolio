@@ -77,14 +77,57 @@ const jsonLd = {
   <!-- Reading progress -->
   <div id="reading-progress" aria-hidden="true"></div>
 
-  <!-- No entrance animation here: the full article appears immediately
-       (an opacity-0 fade-in reads as a dark flash on heavy pages). -->
   <div
-    class="mx-auto max-w-[45rem] xl:grid xl:max-w-none xl:grid-cols-[minmax(0,1fr)_12.5rem] xl:gap-10"
+    class="max-w-[46rem] xl:grid xl:max-w-none xl:grid-cols-[minmax(0,46rem)_minmax(0,13rem)] xl:justify-between xl:gap-x-16"
   >
     <TOC {headings} lang={lang} />
 
     <article class="min-w-0 xl:col-start-1 xl:row-start-1">
+      <!-- Entry header -->
+      <header class="entry-head mb-10" data-thermal-shield data-reveal>
+        <a href={localePath(lang, section)} class="entry-back" data-astro-prefetch>
+          <span class="i-lucide-arrow-left size-3.5" aria-hidden="true"></span>
+          {text.back}
+        </a>
+        <h1 class="entry-heading">
+          {data.draft && <span class="me-2 text-accent">[{t('entry.draft')}]</span>}
+          {data.title}
+        </h1>
+
+        <!-- Meta row: date, reading time, views -->
+        <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-soft">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="i-lucide-calendar size-3.5" aria-hidden="true"></span>
+            <time datetime={published.toISOString()}>{date(published)}</time>
+          </span>
+          {
+            updated && (
+              <span class="inline-flex items-center gap-1.5">
+                <span class="i-lucide-refresh-cw size-3.5" aria-hidden="true" />
+                {t('entry.updated', { date: date(updated) })}
+              </span>
+            )
+          }
+          <span class="inline-flex items-center gap-1.5">
+            <span class="i-lucide-clock size-3.5" aria-hidden="true"></span>
+            {t('entry.readingTime', { minutes: minutesRead })}
+          </span>
+          {config.pageview.server && <Pageview lang={lang} />}
+        </div>
+        {
+          data.tags.length > 0 && (
+            <ul class="mt-4 flex flex-wrap items-center gap-1.5" aria-label={t('entry.tags')}>
+              {data.tags.map((tag) => (
+                <li class="tag-pill">{tag}</li>
+              ))}
+            </ul>
+          )
+        }
+
+        <!-- Project links (source code / live demo) -->
+        <ProjectLinks lang={lang} repo={repo} demo={demo} variant="chip" class="mt-6" />
+      </header>
+
       <!-- Cover image (optimized: responsive sizes, eager for LCP, no CLS) -->
       {
         data.heroImage && (
@@ -92,67 +135,24 @@ const jsonLd = {
             src={data.heroImage.src}
             alt={data.heroImage.alt ?? data.title}
             widths={[640, 960, 1280]}
-            sizes="(min-width: 784px) 720px, (min-width: 640px) calc(100vw - 64px), calc(100vw - 40px)"
+            sizes="(min-width: 784px) 736px, (min-width: 640px) calc(100vw - 64px), calc(100vw - 40px)"
             fetchpriority="high"
             loading="eager"
             decoding="async"
-            class="mb-9 h-auto max-h-96 w-full rounded-2xl border border-line object-cover"
+            class="entry-cover mb-10 h-auto max-h-[28rem] w-full rounded-2xl border border-line object-cover"
           />
         )
       }
 
-      <!-- Entry header -->
-      <header class="mb-9">
-        <h1 class="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
-          {data.draft && <span class="me-2 text-accent">[{t('entry.draft')}]</span>}
-          {data.title}
-        </h1>
-
-        <!-- Meta row: muted text, then the tag pills inline -->
-        <div class="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-ink-soft">
-          <time datetime={published.toISOString()}>{date(published)}</time>
-          {
-            updated && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span>{t('entry.updated', { date: date(updated) })}</span>
-              </>
-            )
-          }
-          <span aria-hidden="true">·</span>
-          <span>{t('entry.readingTime', { minutes: minutesRead })}</span>
-          {
-            config.pageview.server && (
-              <>
-                <span aria-hidden="true">·</span>
-                <Pageview lang={lang} />
-              </>
-            )
-          }
-          {
-            data.tags.length > 0 && (
-              <ul class="flex flex-wrap items-center gap-1.5" aria-label={t('entry.tags')}>
-                {data.tags.map((tag) => (
-                  <li class="tag-pill">#{tag}</li>
-                ))}
-              </ul>
-            )
-          }
-        </div>
-
-        <!-- Project links (source code / live demo) -->
-        <ProjectLinks lang={lang} repo={repo} demo={demo} variant="chip" class="mt-5" />
-      </header>
-
       <!-- Entry body -->
-      <div class="prose prose-fill">
+      <div class="prose prose-fill" data-thermal-shield>
         <slot />
       </div>
       <Mermaid />
 
       <!-- Entry footer -->
-      <footer class="not-prose mt-14 border-t border-line pt-6">
-        <p class="font-serif text-sm italic text-ink-soft">{text.end}</p>
+      <footer class="not-prose mt-14 border-t border-line pt-6" data-thermal-shield>
+        <p class="text-sm text-ink-soft">{text.end}</p>
         <div class="mt-4 flex flex-wrap items-center gap-3">
           <a href={localePath(lang, section)} class="chip" data-astro-prefetch>
             <span class="i-lucide-arrow-left size-3.5" aria-hidden="true"></span>
@@ -218,16 +218,42 @@ const jsonLd = {
 </BaseLayout>
 
 <style>
+  /* Reading progress: the heat scale fills up as you read */
   #reading-progress {
     position: fixed;
     inset-inline: 0;
     top: 0;
     z-index: 50;
     height: 3px;
-    background-color: hsl(var(--accent) / 0.85);
+    background: var(--thermal-gradient);
     transform-origin: 0 50%;
     transform: scaleX(0);
     pointer-events: none;
+  }
+
+  .entry-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--ink-soft) / 1);
+    transition: color 0.2s ease;
+  }
+  .entry-back:hover {
+    color: hsl(var(--accent) / 1);
+  }
+  .entry-heading {
+    font-family: var(--font-sans);
+    font-size: clamp(1.9rem, 1.45rem + 1.9vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+  .entry-cover {
+    box-shadow: 0 24px 60px -32px hsl(var(--decor) / 0.4);
   }
 </style>
 

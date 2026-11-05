@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro'
 
 import EntryCard from '@/components/EntryCard.astro'
+import PageHeader from '@/components/PageHeader.astro'
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { LOCALE_META, localePath, localeStaticPaths, useTranslations, type Locale } from '@/i18n'
 import { getPosts, getProjects, searchId, sortByDate } from '@/utils/server'
@@ -23,12 +24,9 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags))].sort((a, 
 ---
 
 <BaseLayout lang={lang} title={t('search.title')} description={t('search.description')} noindex>
-  <div class="animate not-prose mx-auto max-w-[47.5rem]">
-    <header class="mb-6">
-      <h1 class="font-serif text-3xl font-semibold">{t('search.title')}</h1>
-      <p class="mt-2 text-sm text-ink-soft">{t('search.description')}</p>
-    </header>
+  <PageHeader title={t('search.title')} subtitle={t('search.description')} />
 
+  <div class="not-prose max-w-[46rem]" data-thermal-shield>
     <form
       id="search-form"
       role="search"
@@ -49,7 +47,7 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags))].sort((a, 
           placeholder={t('search.placeholder')}
           autocomplete="off"
           aria-controls="search-results"
-          class="w-full rounded-xl border border-line bg-card px-10 py-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-ink-soft/60 focus:border-accent focus:ring-2 focus:ring-accent/20"
+          class="w-full rounded-xl border border-ink-soft/40 bg-card px-10 py-3.5 text-[0.95rem] text-ink outline-none transition-colors duration-200 placeholder:text-ink-soft/75 focus:border-accent focus:ring-3 focus:ring-accent/20"
         />
       </div>
 
@@ -63,7 +61,7 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags))].sort((a, 
             <div class="flex flex-wrap gap-1.5" role="group" aria-labelledby="search-tags-label">
               {tags.map((tag) => (
                 <button type="button" class="chip tag-filter" aria-pressed="false" data-tag={tag}>
-                  #{tag}
+                  {tag}
                 </button>
               ))}
             </div>
@@ -93,17 +91,26 @@ const tags = [...new Set(entries.flatMap((entry) => entry.data.tags))].sort((a, 
       }
     </div>
 
-    <p id="search-empty" class="py-12 text-center text-ink-soft" hidden>{t('search.empty')}</p>
+    <p id="search-empty" class="py-12 text-ink-soft" hidden>{t('search.empty')}</p>
   </div>
 </BaseLayout>
 
 <style>
-  /* Selected tag filter: solid accent (text in --accent-fg, made for this background) */
+  /* Tag filters: the secondary role (like tags), filled once selected */
+  .tag-filter {
+    border-color: hsl(var(--secondary) / 0.25);
+    background-color: hsl(var(--secondary) / 0.06);
+    color: hsl(var(--secondary) / 1);
+  }
+  .tag-filter:hover {
+    border-color: hsl(var(--secondary) / 0.6);
+    background-color: hsl(var(--secondary) / 0.14);
+  }
   .tag-filter[aria-pressed='true'],
   .tag-filter[aria-pressed='true']:hover {
-    background-color: hsl(var(--accent) / 1);
-    border-color: hsl(var(--accent) / 1);
-    color: hsl(var(--accent-fg) / 1);
+    background-color: hsl(var(--secondary) / 1);
+    border-color: hsl(var(--secondary) / 1);
+    color: hsl(var(--paper) / 1);
   }
 </style>
 

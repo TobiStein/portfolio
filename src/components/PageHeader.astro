@@ -1,0 +1,67 @@
+---
+/**
+ * Title block of the section pages (projects, blog, search, about…), with an
+ * optional small butterfly perched on the right (drawn by the thermal background).
+ */
+interface Props {
+  title: string
+  subtitle?: string
+  /** Perch the butterfly next to the title (wide screens only) */
+  butterfly?: boolean
+}
+
+const { title, subtitle, butterfly = true } = Astro.props
+---
+
+<header class="page-head not-prose">
+  <div class="page-head-copy" data-thermal-shield data-reveal>
+    <h1 class="page-title">{title}</h1>
+    {subtitle && <p class="page-sub text-justified">{subtitle}</p>}
+    <slot />
+  </div>
+  {butterfly && <div class="page-butterfly" data-butterfly aria-hidden="true" />}
+</header>
+
+<style>
+  .page-head {
+    display: grid;
+    align-items: end;
+    gap: 1rem 3rem;
+    margin-bottom: 2.25rem;
+  }
+  .page-head-copy {
+    max-width: 46rem;
+    padding-bottom: 1.4rem;
+    border-bottom: 1px solid hsl(var(--line) / 1);
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 1.6rem + 2vw, 3rem);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .page-sub {
+    margin-top: 0.9rem;
+    max-width: 38rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: hsl(var(--ink-soft) / 1);
+  }
+  .page-butterfly {
+    display: none;
+  }
+  @media (min-width: 1024px) {
+    .page-head {
+      grid-template-columns: minmax(0, 46rem) minmax(0, 1fr);
+    }
+    .page-butterfly {
+      display: block;
+      justify-self: end;
+      width: min(100%, 19rem);
+      aspect-ratio: 6 / 5;
+      margin-block: -2.5rem -1rem;
+    }
+  }
+</style>

@@ -31,8 +31,10 @@ const { t } = useTranslations(Astro.props.lang)
     margin: 0;
     border: 0;
     padding: 4rem 4vw;
-    background: transparent;
-    color: white;
+    /* The dialog covers the viewport and carries the backdrop color itself:
+       custom properties (tokens.css) are not inherited by ::backdrop everywhere */
+    background: hsl(var(--overlay) / 0.78);
+    color: hsl(var(--overlay-fg) / 1);
     cursor: zoom-out;
   }
   .lb-dialog[open] {
@@ -41,7 +43,7 @@ const { t } = useTranslations(Astro.props.lang)
     justify-content: center;
   }
   .lb-dialog::backdrop {
-    background: rgb(0 0 0 / 78%);
+    background: transparent;
   }
   .lb-dialog img {
     width: auto;
@@ -50,7 +52,7 @@ const { t } = useTranslations(Astro.props.lang)
     max-height: 100%;
     object-fit: contain;
     border-radius: 0.5rem;
-    box-shadow: 0 12px 48px rgb(0 0 0 / 45%);
+    box-shadow: 0 12px 48px hsl(var(--overlay) / 0.45);
     cursor: default;
   }
   .lb-close {
@@ -63,16 +65,16 @@ const { t } = useTranslations(Astro.props.lang)
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 9999px;
-    border: 1px solid rgb(255 255 255 / 25%);
-    background: rgb(0 0 0 / 35%);
-    color: #fff;
+    border: 1px solid hsl(var(--overlay-fg) / 0.25);
+    background: hsl(var(--overlay) / 0.35);
+    color: hsl(var(--overlay-fg) / 1);
     cursor: pointer;
   }
   .lb-close:hover {
-    background: rgb(0 0 0 / 55%);
+    background: hsl(var(--overlay) / 0.55);
   }
   .lb-close:focus-visible {
-    outline: 2px solid white;
+    outline: 2px solid hsl(var(--overlay-fg) / 1);
     outline-offset: 3px;
   }
   .lb-caption {
@@ -84,7 +86,7 @@ const { t } = useTranslations(Astro.props.lang)
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: rgb(255 255 255 / 85%);
+    color: hsl(var(--overlay-fg) / 0.85);
     font-size: 0.8125rem;
     cursor: default;
   }

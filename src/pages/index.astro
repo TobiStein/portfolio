@@ -1,9 +1,14 @@
 ---
 // Site root: send visitors to their language (saved choice, then browser
-// languages, then the default language). Not indexed, no site chrome.
+// languages, then the default language). Not indexed, no site chrome, but the
+// same palette and theme as the site (tokens.css, theme script) if it shows.
+import '@/assets/styles/tokens.css'
+import tokensCss from '@/assets/styles/tokens.css?raw'
 import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, LOCALES, localePath, type Locale } from '@/i18n'
+import themeScript from '@/scripts/theme.js?raw'
 import { config } from '@/site-config'
 import { withBase } from '@/utils'
+import { themeAttributes } from '@/utils/theme'
 
 // Each language written in its own language (endonyms)
 const LANGUAGE_NAMES: Record<Locale, string> = { fr: 'Français', en: 'English' }
@@ -22,13 +27,20 @@ const redirect = {
 ---
 
 <!doctype html>
-<html lang={DEFAULT_LOCALE}>
+<html
+  lang={DEFAULT_LOCALE}
+  {...themeAttributes(tokensCss)}
+  data-default-theme={config.site.theme}
+  data-default-palette={config.site.palette}
+  data-palette={config.site.palette}
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>{config.site.title}</title>
     <link rel="icon" href={withBase(config.site.favicon)} sizes="any" />
+    <script is:inline set:html={themeScript} />
     <script is:inline define:vars={{ redirect }}>
       let lang
       try {
@@ -48,17 +60,14 @@ const redirect = {
     </script>
     <noscript><meta http-equiv="refresh" content={`0; url=${fallbackHome}`} /></noscript>
     <style is:global>
-      :root {
-        color-scheme: light dark;
-      }
       body {
         display: grid;
         min-height: 100dvh;
         margin: 0;
         place-items: center;
-        background: Canvas;
-        color: CanvasText;
-        font-family: system-ui, sans-serif;
+        background: hsl(var(--paper) / 1);
+        color: hsl(var(--ink) / 1);
+        font-family: var(--font-sans);
       }
       ul {
         display: flex;

@@ -22,7 +22,7 @@ const enabled = config.comment.provider === 'waline' && server !== ''
   enabled && (
     <section class="not-prose mt-14" aria-label={t('comments.title')}>
       <link rel="stylesheet" href={walineStylesheet} />
-      <h2 class="mb-4 flex items-center gap-2 font-serif text-lg font-semibold">
+      <h2 class="mb-4 flex items-center gap-2 font-display text-lg">
         <span class="i-lucide-message-square size-4 text-accent" aria-hidden="true" />
         {t('comments.title')}
       </h2>

@@ -9,15 +9,17 @@ const fr = {
   'a11y.skip': 'Aller au contenu',
   'nav.primary': 'Navigation principale',
   'header.theme': 'Changer de thème (système / clair / sombre)',
+  'header.palette': 'Changer de palette (fire / abyss)',
   'lang.switchTo': 'Version française',
   'backToTop': 'Retour en haut',
 
   // Home
   'home.moreAbout': 'En savoir plus',
+  'home.cta': 'Voir les projets',
   'home.projects': 'Projets récents',
-  'home.allProjects': 'Tous les projets →',
+  'home.allProjects': 'Tous les projets',
   'home.posts': 'Articles récents',
-  'home.allPosts': 'Tous les articles →',
+  'home.allPosts': 'Tous les articles',
 
   // Blog
   'blog.title': 'Blog',
@@ -116,14 +118,16 @@ const en: Record<UIKey, string> = {
   'a11y.skip': 'Skip to content',
   'nav.primary': 'Primary navigation',
   'header.theme': 'Toggle theme (system / light / dark)',
+  'header.palette': 'Switch palette (fire / abyss)',
   'lang.switchTo': 'English version',
   'backToTop': 'Back to top',
 
   'home.moreAbout': 'More about me',
+  'home.cta': 'See my projects',
   'home.projects': 'Recent projects',
-  'home.allProjects': 'All projects →',
+  'home.allProjects': 'All projects',
   'home.posts': 'Recent posts',
-  'home.allPosts': 'All posts →',
+  'home.allPosts': 'All posts',
 
   'blog.title': 'Blog',
   'blog.description': 'Articles, notes and thoughts.',

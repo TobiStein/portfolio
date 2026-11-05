@@ -1,14 +1,14 @@
 ---
 import ProjectLinks from '@/components/ProjectLinks.astro'
-import { useTranslations, type Locale } from '@/i18n'
-import { cn } from '@/utils'
+import { LOCALE_META, useTranslations, type Locale } from '@/i18n'
+import { cn, formatDate } from '@/utils'
 import { entryUrl, getReadingTime, type Entry } from '@/utils/server'
 
 interface Props {
   /** A blog post or a project */
   entry: Entry
   lang: Locale
-  /** Show "Project" / "Post" before the date (lists mixing both) */
+  /** Show "Project" / "Post" under the date (lists mixing both) */
   showType?: boolean
   class?: string
   /** Extra data-* attributes for the <article> (used by the search page) */
@@ -16,59 +16,222 @@ interface Props {
 }
 
 const { entry, lang, showType = false, class: className, ...attributes } = Astro.props
-const { t, date } = useTranslations(lang)
+const { t } = useTranslations(lang)
 const { data } = entry
 const shownDate = data.updatedDate ?? data.publishDate
+const locale = LOCALE_META[lang].intl
+const year = formatDate(shownDate, locale, { year: 'numeric' })
+const month = formatDate(shownDate, locale, { month: 'short' })
+const fullDate = formatDate(shownDate, locale)
 const minutesRead = getReadingTime(entry)
 const repo = entry.collection === 'projects' ? entry.data.repo : undefined
 const demo = entry.collection === 'projects' ? entry.data.demo : undefined
-const hasFooter = data.tags.length > 0 || Boolean(repo || demo)
 ---
 
-<article
-  class={cn('post-row not-prose group relative flex flex-col gap-2', className)}
-  {...attributes}
->
-  <h2
-    class="font-serif text-xl font-semibold leading-snug transition-colors duration-200 group-hover:text-accent"
-  >
-    <a href={entryUrl(entry)} data-astro-prefetch class="after:absolute after:inset-0">
-      {data.draft && <span class="me-1 text-accent">[{t('entry.draft')}]</span>}
-      {data.title}
-    </a>
-  </h2>
-
-  <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-ink-soft">
+<article class={cn('entry post-row not-prose group relative', className)} {...attributes}>
+  <!-- Date gutter: the year reads as a timeline down the list -->
+  <div class="entry-when">
+    <time datetime={shownDate.toISOString()} title={fullDate}>
+      <span class="entry-month">{month}</span>
+      <span class="entry-year">{year}</span>
+    </time>
     {
       showType && (
-        <>
-          <span class="font-medium text-ink">
-            {t(entry.collection === 'projects' ? 'entry.typeProject' : 'entry.typePost')}
-          </span>
-          <span aria-hidden="true">·</span>
-        </>
+        <span class="entry-type">
+          {t(entry.collection === 'projects' ? 'entry.typeProject' : 'entry.typePost')}
+        </span>
       )
     }
-    <time datetime={shownDate.toISOString()} class="tabular-nums">{date(shownDate)}</time>
-    <span aria-hidden="true">·</span>
-    <span>{t('entry.readingTime', { minutes: minutesRead })}</span>
   </div>
 
-  <p class="line-clamp-2 text-sm leading-relaxed text-ink-soft">{data.description}</p>
+  <div class="entry-main">
+    <h2 class="entry-title">
+      <a href={entryUrl(entry)} data-astro-prefetch class="after:absolute after:inset-0">
+        {data.draft && <span class="me-1 text-accent">[{t('entry.draft')}]</span>}
+        {data.title}
+      </a>
+    </h2>
 
-  {
-    hasFooter && (
-      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-1">
-        {data.tags.length > 0 && (
+    <p class="entry-desc text-justified">{data.description}</p>
+
+    <div class="entry-foot">
+      {
+        data.tags.length > 0 && (
           <ul class="flex flex-wrap items-center gap-1.5" aria-label={t('entry.tags')}>
             {data.tags.map((tag) => (
-              <li class="tag-pill">#{tag}</li>
+              <li class="tag-pill">{tag}</li>
             ))}
           </ul>
-        )}
+        )
+      }
+      <div class="ms-auto flex items-center gap-3">
+        <span class="entry-read">{t('entry.readingTime', { minutes: minutesRead })}</span>
         {/* Above the stretched title link so they stay clickable */}
         <ProjectLinks lang={lang} repo={repo} demo={demo} class="relative z-10" />
       </div>
-    )
-  }
+    </div>
+  </div>
 </article>
+
+<style>
+  .entry {
+    display: grid;
+    gap: 0.4rem 2rem;
+    /* Wide rows (home page) put the tags in a column of their own, see below */
+    container-type: inline-size;
+  }
+  @media (min-width: 640px) {
+    .entry {
+      grid-template-columns: 4.25rem minmax(0, 1fr);
+    }
+  }
+
+  /* ---- Date gutter ---- */
+  .entry-when {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    color: hsl(var(--ink-soft) / 1);
+  }
+  .entry-when time {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+  @media (min-width: 640px) {
+    .entry-when {
+      flex-direction: column;
+      gap: 0.35rem;
+      padding-top: 0.3rem;
+    }
+    .entry-when time {
+      flex-direction: column-reverse;
+      gap: 0.1rem;
+    }
+  }
+  /* The year in the pixel face, like a camera timestamp */
+  .entry-year {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--ink-soft) / 1);
+    transition: color 0.25s ease;
+  }
+  @media (min-width: 640px) {
+    .entry-year {
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+  }
+  .entry-month {
+    text-transform: lowercase;
+  }
+  .entry-type {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--meta) / 1);
+  }
+
+  /* ---- Main column ---- */
+  .entry-main {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  /* Heat bar: appears in the gutter when the entry is hovered or focused */
+  .entry-main::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: -1rem;
+    top: 0.35rem;
+    bottom: 0.2rem;
+    width: 2px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, var(--thermal-9), var(--thermal-7), var(--thermal-4));
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.35s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .entry:hover .entry-main::before,
+  .entry:focus-within .entry-main::before {
+    transform: scaleY(1);
+  }
+  .entry:hover .entry-year,
+  .entry:focus-within .entry-year {
+    color: hsl(var(--accent) / 1);
+  }
+
+  .entry-title {
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 650;
+    line-height: 1.25;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+    transition: color 0.2s ease;
+  }
+  .entry:hover .entry-title,
+  .entry:focus-within .entry-title {
+    color: hsl(var(--accent) / 1);
+  }
+  /* Capped to a comfortable reading measure when the entry is wide (home page) */
+  .entry-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 40rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: hsl(var(--ink-soft) / 1);
+  }
+  .entry-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+    padding-top: 0.3rem;
+  }
+  .entry-read {
+    font-size: 0.78rem;
+    color: hsl(var(--ink-soft) / 0.9);
+    white-space: nowrap;
+  }
+
+  /* Wide rows (home page, full width): text on the left at a reading measure,
+     tags and links in a right column aligned to the edge of the page */
+  @container (min-width: 64rem) {
+    .entry-main {
+      display: grid;
+      grid-template-columns: minmax(0, 40rem) minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      gap: 0.5rem 3rem;
+    }
+    .entry-title {
+      grid-area: 1 / 1;
+    }
+    .entry-desc {
+      grid-area: 2 / 1;
+      align-self: start;
+    }
+    .entry-foot {
+      grid-area: 1 / 2 / span 2 / 3;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding-top: 0.3rem;
+    }
+    .entry-foot ul {
+      justify-content: flex-end;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .entry-main::before {
+      transition: none;
+    }
+  }
+</style>

@@ -4,6 +4,7 @@
  * Fields left empty (`''`) are simply hidden on the site; fill them in when ready.
  */
 import type { Localized } from '@/i18n'
+import type { Palette } from '@/utils/theme'
 
 export interface NavItem {
   title: Localized
@@ -59,6 +60,9 @@ export interface Config {
     avatar: string
     /** Open Graph image (link previews); a path under `public/` */
     ogImage: string
+    /** Default color palette for first-time visitors: 'fire' | 'abyss'
+     *  (colors in src/assets/styles/tokens.css, header button to switch) */
+    palette: Palette
     /** Default theme for first-time visitors: 'light' | 'dark' | 'system' (follow OS) */
     theme: 'light' | 'dark' | 'system'
     /** Separator between page title and site title, e.g. " · " */
@@ -136,6 +140,7 @@ export const config: Config = {
     favicon: '/favicon/favicon.ico',
     avatar: '/avatar2.png',
     ogImage: '/og-card.png',
+    palette: 'fire',
     theme: 'system',
     titleDelimiter: ' · '
   },

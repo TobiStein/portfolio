@@ -1,0 +1,32 @@
+---
+/**
+ * Thermal ASCII background: a fixed canvas behind the whole page
+ * (engine in src/scripts/thermal). Purely decorative.
+ * - `[data-butterfly]` on an element places the butterfly in that box.
+ * - `[data-thermal-shield]` on a text block cools the field behind it.
+ */
+---
+
+<canvas id="thermal-field" aria-hidden="true"></canvas>
+
+<style>
+  #thermal-field {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+  @media print {
+    #thermal-field {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { mountThermal } from '@/scripts/thermal'
+
+  mountThermal()
+</script>

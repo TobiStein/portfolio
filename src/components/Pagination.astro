@@ -26,7 +26,7 @@ const { prev, next, label = t('pagination.label') } = Astro.props
         data-astro-prefetch
       >
         <span
-          class="i-lucide-arrow-left size-4 text-accent transition-transform duration-300 group-hover:-translate-x-1"
+          class="i-lucide-arrow-left size-4 text-secondary transition-transform duration-300 group-hover:-translate-x-1"
           aria-hidden="true"
         />
         <span class="truncate text-sm font-medium">{prev.title}</span>
@@ -44,7 +44,7 @@ const { prev, next, label = t('pagination.label') } = Astro.props
       >
         <span class="truncate text-sm font-medium">{next.title}</span>
         <span
-          class="i-lucide-arrow-right size-4 text-accent transition-transform duration-300 group-hover:translate-x-1"
+          class="i-lucide-arrow-right size-4 text-secondary transition-transform duration-300 group-hover:translate-x-1"
           aria-hidden="true"
         />
       </a>
